@@ -40,6 +40,8 @@ htmlcov/
 .idea/
 *.swp
 *.swo
+.cursorindexingignore
+.cursorrules
 
 # OS
 .DS_Store
@@ -47,6 +49,9 @@ Thumbs.db
 
 # Notebooks
 notebooks/
+
+# SpecStory project history
+.specstory/
 
 # Interim documentation and planning files
 .documents/

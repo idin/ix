@@ -11,13 +11,13 @@ Main class: NameRegistry - handles all name registration and matching operations
 """
 
 from .name_registry import NameRegistry
-from .normalize import (
+from .utils.normalize import (
     normalize_for_matching,
     normalize_strict,
     get_first_letter,
     extract_tokens
 )
-from .first_letter_dict import FirstLetterDict
+from .utils.first_letter_dict import FirstLetterDict
 
 __all__ = [
     'NameRegistry',

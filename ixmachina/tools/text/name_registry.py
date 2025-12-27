@@ -15,8 +15,8 @@ import json
 import pickle
 from pathlib import Path
 
-from .normalize import normalize_for_matching, normalize_strict, get_first_letter, extract_tokens
-from .first_letter_dict import FirstLetterDict
+from .utils.normalize import normalize_for_matching, normalize_strict, get_first_letter, extract_tokens
+from .utils.first_letter_dict import FirstLetterDict
 
 
 class NameRegistry:
@@ -123,16 +123,17 @@ class NameRegistry:
                     self._names_by_letter[existing_first_letter][existing_canonical]['count'] += 1
             return existing_canonical
         
-        # Extract tokens from the name
+        # Extract tokens from the name (already normalized by extract_tokens)
         tokens = extract_tokens(name)
         
         # Store normalized tokens with their positions
+        # Note: tokens are already normalized, no need to normalize again
         token_data = []
         for i, token in enumerate(tokens):
             token_data.append({
                 'token': token,
                 'position': i,
-                'normalized': normalize_for_matching(token),
+                'normalized': token,  # Already normalized by extract_tokens
                 'strict': normalize_strict(token)
             })
         
@@ -586,7 +587,7 @@ class NameRegistry:
         
         Uses a two-stage approach for efficiency:
         1. Try exact match first (O(1) hash lookup)
-        2. Fall back to fuzzy matching if no exact match
+        2. Fall back to batch fuzzy matching if no exact match
         
         Args:
             token: Token to match.
@@ -611,15 +612,24 @@ class NameRegistry:
         if token_normalized in tokens_dict:
             return [(token_normalized, 100)]
         
-        # Stage 2: No exact match, do fuzzy matching
-        matches = []
-        for registered_token, data in tokens_dict.items():
-            score = fuzz.ratio(token_normalized, registered_token)
-            if score >= threshold:
-                matches.append((registered_token, score))
+        # Stage 2: No exact match, use batch fuzzy matching (much faster)
+        # RapidFuzz can match one query against many candidates efficiently
+        from rapidfuzz import process
         
-        # Sort by score descending
-        matches.sort(key=lambda x: x[1], reverse=True)
+        registered_tokens = list(tokens_dict.keys())
+        # extractOne returns (match, score, index) or None
+        results = process.extract(
+            query=token_normalized,
+            choices=registered_tokens,
+            scorer=fuzz.ratio,
+            score_cutoff=threshold,
+            limit=None  # Get all matches above threshold
+        )
+        
+        # Convert to our format: [(token, score)]
+        matches = [(match, score) for match, score, _ in results]
+        
+        # Already sorted by score descending by RapidFuzz
         return matches
     
     def _score_name_match(
@@ -754,6 +764,28 @@ class NameRegistry:
         if not text_tokens:
             return None
         
+        # Quick check: Try direct name lookup first (handles concatenated forms like "johnsmith")
+        # This is O(1) and much faster than token-based matching
+        for text_token in text_tokens:
+            canonical = self.get_canonical(text_token)
+            if canonical:
+                # Found exact match! Get the name's token data for details
+                first_letter = get_first_letter(canonical)
+                if first_letter and first_letter in self._names_by_letter:
+                    name_data = self._names_by_letter[first_letter].get(canonical)
+                    if name_data:
+                        # Return with perfect score
+                        return (
+                            canonical,
+                            100,
+                            {
+                                'matched_tokens': name_data['tokens'],
+                                'coverage': 1.0,
+                                'positions': [text_tokens.index(text_token)],
+                                'average_similarity': 100
+                            }
+                        )
+        
         # Fuzzy match each text token against registry tokens
         token_matches = {}  # text_token -> [(registry_token, score)]
         
@@ -882,8 +914,8 @@ class NameRegistry:
         """
         Standardize ALL names in text by replacing them with their canonical forms.
         
-        Finds all matching names and returns both the standardized text
-        and a list of canonical names that were found.
+        Finds all matching names and replaces them in the original text,
+        preserving formatting and non-name portions.
         
         Args:
             text: Text to standardize (often a file name).
@@ -903,7 +935,7 @@ class NameRegistry:
             >>> registry.add_name("Jane Doe")
             >>> result = registry.standardize_names_in_text("john_smith_and_jane_doe_report.pdf")
             >>> result['standardized_text']
-            'John Smith and Jane Doe_report.pdf'
+            'John Smith and Jane Doe report.pdf'
             >>> result['names_found']
             ['John Smith', 'Jane Doe']
         """
@@ -918,7 +950,7 @@ class NameRegistry:
                 'num_replacements': 0
             }
         
-        # Extract tokens from the original text
+        # Extract tokens to find their positions in the original text
         text_tokens = extract_tokens(text)
         if not text_tokens:
             return {
@@ -940,41 +972,63 @@ class NameRegistry:
             conflict = any(pos in token_to_name for pos in positions)
             
             if not conflict:
-                # Claim these positions for this name
-                for pos in positions:
-                    token_to_name[pos] = (canonical_name, details)
+                # Claim all these positions for this name
+                # We only store at the first position
+                first_pos = min(positions)
+                token_to_name[first_pos] = (canonical_name, sorted(positions))
         
-        # Build result by replacing matched token sequences with canonical names
-        result_tokens = []
-        i = 0
+        # Sort by position to process in order
+        sorted_matches = sorted(token_to_name.items(), key=lambda x: x[0])
+        
+        # Build list of replacements: (start_char, end_char, replacement)
+        replacements = []
         found_names = []
+        text_lower = text.lower()
         
-        while i < len(text_tokens):
-            if i in token_to_name:
-                # This position starts a name match
-                canonical_name, details = token_to_name[i]
-                
-                # Add the canonical name
-                result_tokens.append(canonical_name)
-                found_names.append(canonical_name)
-                
-                # Skip all positions that were part of this name
-                positions = sorted(details['positions'])
-                # Find the last position in this sequence
-                last_pos = positions[-1]
-                i = last_pos + 1
-            else:
-                # Regular token, keep as-is
-                result_tokens.append(text_tokens[i])
-                i += 1
+        for first_token_pos, (canonical_name, positions) in sorted_matches:
+            # Get the tokens for this name
+            tokens_to_find = [text_tokens[pos] for pos in positions]
+            
+            # Find the character span in the original text
+            # Start with the first token
+            first_token = tokens_to_find[0]
+            last_token = tokens_to_find[-1]
+            
+            # Start searching after previous replacement (if any)
+            search_start = 0
+            if replacements:
+                search_start = replacements[-1][1]
+            
+            # Find first token
+            first_char_idx = text_lower.find(first_token, search_start)
+            if first_char_idx == -1:
+                continue
+            
+            # Find last token (must be after first token)
+            last_char_idx = text_lower.find(last_token, first_char_idx + len(first_token))
+            if last_char_idx == -1:
+                # Single token case
+                if len(tokens_to_find) == 1:
+                    last_char_idx = first_char_idx
+                else:
+                    continue
+            
+            # The span is from first_char_idx to end of last token
+            span_start = first_char_idx
+            span_end = last_char_idx + len(last_token)
+            
+            replacements.append((span_start, span_end, canonical_name))
+            found_names.append(canonical_name)
         
-        # Rejoin tokens (this loses original formatting - could be improved)
-        standardized = ' '.join(result_tokens)
+        # Apply replacements from end to start to preserve indices
+        standardized = text
+        for start, end, replacement in reversed(replacements):
+            standardized = standardized[:start] + replacement + standardized[end:]
         
         return {
             'standardized_text': standardized,
             'original_text': text,
-            'names_found': found_names,
+            'names_found': list(set(found_names)),  # Unique names
             'num_replacements': len(found_names)
         }
     
