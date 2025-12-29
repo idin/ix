@@ -5,7 +5,7 @@ Test to verify that searching for OpenAI pricing returns results.
 from ixmachina.tools.web import search_web
 
 
-def test_search_openai_pricing_returns_results():
+def test_openai_pricing_returns_results():
     """Test that searching for OpenAI pricing returns at least some results."""
     result = search_web(
         query="openai model pricing per million tokens",
@@ -32,7 +32,7 @@ def test_search_openai_pricing_returns_results():
         assert len(res["url"]) > 0
 
 
-def test_search_openai_pricing_with_domain_filter():
+def test_openai_pricing_with_domain_filter():
     """Test that searching for OpenAI pricing with domain filter returns openai.com results."""
     result = search_web(
         query="openai model pricing per million tokens",

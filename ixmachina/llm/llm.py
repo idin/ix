@@ -2,11 +2,21 @@
 LLM connection and querying functionality.
 """
 
+from pathlib import Path
 from typing import List, Dict, Optional, Union, Any
 
 from ..utils.addable_dictionary import AddableDictionary
 from ..utils.normalize_keys import normalize_key, normalize_keys
 from ..utils.usage_tracker import UsageTracker
+from ..utils.persist import (
+    hash_data,
+    resolve_cache_file_path,
+    get_from_disk_cache,
+    set_to_disk_cache,
+    get_cache_path,
+    DEFAULT_CACHE_PATH,
+    _CACHE_MISS,
+)
 from .env_var import EnvVar
 from .query_openai import query_openai
 from .query_anthropic import query_anthropic
@@ -28,6 +38,7 @@ class LLM:
         provider: Optional[str] = None,
         pricing: Optional[Dict[str, Union[float, Dict[str, float]]]] = None,
         fetch_pricing: bool = False,
+        use_cache: bool = False,
         **kwargs,
     ) -> None:
         """
@@ -43,6 +54,9 @@ class LLM:
                 Example: {"input": 2.5, "output": 10.0} or 2.5
             fetch_pricing: If True, automatically fetch pricing from the web using get_model_prices.
                 Pricing will be fetched lazily on first query if not already set.
+            use_cache: If True, cache LLM responses based on query parameters to avoid
+                duplicate API calls. Responses are cached using a hash of the model, messages,
+                and query parameters. Default: False.
             **kwargs: Additional provider-specific parameters.
         """
         # Resolve api_key from environment if EnvVar is provided
@@ -50,6 +64,13 @@ class LLM:
             self.api_key = api_key.get_value()
         else:
             self.api_key = api_key
+        
+        # Validate that API key is provided and not empty
+        if not self.api_key:
+            raise ValueError(
+                "API key is required but not provided. "
+                "Either pass a string api_key or use EnvVar to read from environment."
+            )
 
         self.model_name = model_name
         self.extra_kwargs = kwargs
@@ -60,6 +81,9 @@ class LLM:
 
         self.provider = provider.lower()
         self._initialize_client()
+        
+        # Caching
+        self.use_cache = use_cache
         
         # Usage tracking
         self.last_usage: Optional[Dict[str, int]] = None
@@ -162,6 +186,7 @@ class LLM:
         Returns:
             The clean string output from the LLM.
         """
+
         # Merge extra_kwargs from initialization with query kwargs
         merged_kwargs = {**self.extra_kwargs, **kwargs}
 
@@ -192,6 +217,39 @@ class LLM:
             if system_prompt:
                 query_messages.append({"role": "system", "content": system_prompt})
             query_messages.append({"role": "user", "content": user_prompt})
+
+        # Check cache if enabled
+        cache_file_path = None
+        if self.use_cache:
+            cache_data = {
+                "model_name": self.model_name,
+                "provider": self.provider,
+                "messages": query_messages,
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "kwargs": sorted(merged_kwargs.items()) if merged_kwargs else [],
+            }
+            arg_hash = hash_data(cache_data)
+            cache_key = f"llm_query:{self.model_name}"
+            
+            # Resolve cache file path
+            default_cache_path = get_cache_path() or DEFAULT_CACHE_PATH
+            cache_file_path = resolve_cache_file_path(
+                cache_key=cache_key,
+                arg_hash=arg_hash,
+                cache_path_override=None,
+                default_cache_path=default_cache_path,
+                memory=False,
+            )
+            
+            # Try to get from cache
+            if cache_file_path is not None:
+                cached_result = get_from_disk_cache(
+                    cache_file_path=cache_file_path,
+                    expire_seconds=None,
+                )
+                if cached_result is not _CACHE_MISS:
+                    return cached_result
 
         # Fetch pricing if requested and not already fetched
         if self.fetch_pricing and not self._pricing_fetched and self.pricing is None:
@@ -239,13 +297,24 @@ class LLM:
                 llm=self.model_name,
             )
         
-        # Return content or result (which might be dict with tool_calls)
+        # Extract the return value
         if isinstance(result, dict) and "content" in result:
-            return result["content"]
+            return_value = result["content"]
         elif isinstance(result, dict) and "tool_calls" in result:
-            return result
+            return_value = result
         else:
-            return result
+            return_value = result
+        
+        # Cache the result if enabled
+        if self.use_cache and cache_file_path is not None:
+            set_to_disk_cache(
+                cache_file_path=cache_file_path,
+                value=return_value,
+                expire_seconds=None,
+                raise_on_error=False,
+            )
+        
+        return return_value
     
     def _fetch_pricing_from_web(self) -> None:
         """

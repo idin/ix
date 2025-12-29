@@ -5,7 +5,7 @@ Tests for search_web function with domain filtering.
 from ixmachina.tools.web import search_web
 
 
-def test_search_web_duckduckgo_without_domain_filter():
+def test_duckduckgo_without_domain_filter():
     """Test DuckDuckGo search without domain filter."""
     result = search_web(
         query="openai model pricing",
@@ -41,7 +41,7 @@ def test_search_web_duckduckgo_without_domain_filter():
         print(f"3. Parsing selectors need updating")
 
 
-def test_search_web_duckduckgo_with_domain_filter_string():
+def test_duckduckgo_with_domain_filter_string():
     """Test DuckDuckGo search with domain filter as string."""
     result = search_web(
         query="openai model pricing",
@@ -71,7 +71,7 @@ def test_search_web_duckduckgo_with_domain_filter_string():
         print(f"3. Network/search engine blocking")
 
 
-def test_search_web_duckduckgo_with_domain_filter_list():
+def test_duckduckgo_with_domain_filter_list():
     """Test DuckDuckGo search with domain filter as list."""
     result = search_web(
         query="openai model pricing",
@@ -97,7 +97,7 @@ def test_search_web_duckduckgo_with_domain_filter_list():
         print(f"No results with domain filter list. Count: {result['count']}")
 
 
-def test_search_web_duckduckgo_domain_filter_comparison():
+def test_duckduckgo_domain_filter_comparison():
     """Test comparing results with and without domain filter."""
     # Search without filter
     result_no_filter = search_web(
@@ -142,7 +142,7 @@ def test_search_web_duckduckgo_domain_filter_comparison():
             print("This suggests a domain filtering logic issue.")
 
 
-def test_search_web_startpage_without_domain_filter():
+def test_startpage_without_domain_filter():
     """Test Startpage search without domain filter."""
     result = search_web(
         query="openai model pricing",
@@ -177,7 +177,7 @@ def test_search_web_startpage_without_domain_filter():
         print(f"3. Parsing selectors need updating")
 
 
-def test_search_web_startpage_with_domain_filter():
+def test_startpage_with_domain_filter():
     """Test Startpage search with domain filter."""
     result = search_web(
         query="openai model pricing",
@@ -203,7 +203,7 @@ def test_search_web_startpage_with_domain_filter():
         print(f"No results with domain filter for Startpage. Count: {result['count']}")
 
 
-def test_search_web_domain_filter_subdomain_matching():
+def test_domain_filter_subdomain_matching():
     """Test that domain filter matches subdomains correctly."""
     result = search_web(
         query="openai api pricing",
@@ -226,7 +226,7 @@ def test_search_web_domain_filter_subdomain_matching():
             print(f"Matched subdomain: {domain}")
 
 
-def test_search_web_domain_filter_multiple_domains():
+def test_domain_filter_multiple_domains():
     """Test domain filter with multiple domains."""
     result = search_web(
         query="ai model pricing",
