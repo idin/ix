@@ -5,11 +5,11 @@ Tests for move_dir_into function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.move_dir_into import move_dir_into
-from ixmachina.tools.file_system.compare_dirs import compare_dirs
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import move_dir_into
+from ixmachina.tools.file_system import compare_dirs
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_move_dir_into_moves_directory():
@@ -47,7 +47,7 @@ def test_move_dir_into_moves_directory():
     assert path_exists(os.path.join(dest_dir, "source_dir", "file.txt"))  # File should be moved too
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_dir_into_destination_exists_fails():
@@ -68,7 +68,7 @@ def test_move_dir_into_destination_exists_fails():
     assert path_exists(source_dir)  # Source should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_dir_into_nested_structure():
@@ -126,7 +126,7 @@ def test_move_dir_into_nested_structure():
     assert path_exists(moved_file2)
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_dir_into_source_not_exists():
@@ -144,5 +144,5 @@ def test_move_dir_into_source_not_exists():
     assert "does not exist" in result["error"]
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

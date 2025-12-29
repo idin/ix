@@ -5,9 +5,8 @@ Tests for path_is_dir function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.path_utils import path_is_dir, path_exists
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import path_is_dir, path_exists, empty_dir
+from .tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_path_is_dir_with_existing_directory():

@@ -6,8 +6,7 @@ import os
 
 from ixmachina.tools.string import smart_truncate_text
 from ixmachina.tools.web import fetch_url, search_web
-from ixmachina.tools.web.parse_html import extract_text
-from ixmachina.tools.web.constants import BROWSER_USER_AGENT
+from ixmachina.tools.web import extract_text, BROWSER_USER_AGENT
 
 
 def test_smart_truncate_text_with_pricing_page():
@@ -16,8 +15,8 @@ def test_smart_truncate_text_with_pricing_page():
     search_result = search_web(
         query="openai model pricing per million tokens",
         max_results=5,
-        search_engine="duckduckgo",
-        domain_filter="openai.com",
+        search_engine="brave",
+        domain_whitelist="openai.com",
     )
     
     # If search fails, we can't test with real data

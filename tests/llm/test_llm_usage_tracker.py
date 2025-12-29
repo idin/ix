@@ -3,6 +3,7 @@ Tests for LLM usage_tracker.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -14,7 +15,7 @@ def test_llm_usage_tracker_initialized():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     assert llm.usage_tracker is not None
     assert llm.usage_tracker.include_conversation_id is False
@@ -27,7 +28,7 @@ def test_llm_usage_tracker_adds_record_on_query():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Initial state - no records
     assert len(llm.usage_tracker.records) == 0
@@ -45,7 +46,7 @@ def test_llm_usage_tracker_adds_record_on_query():
     assert record["input_tokens"] > 0
     assert record["output_tokens"] > 0
     assert record["total_tokens"] > 0
-    assert record["llm"] == "gpt-4"
+    assert record["llm"] == DEFAULT_TEST_MODEL
     assert "conversation_id" not in record
 
 
@@ -55,7 +56,7 @@ def test_llm_usage_tracker_accumulates_records():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Make first query
     llm.query(user_prompt="Say hello")
@@ -80,7 +81,7 @@ def test_llm_usage_tracker_with_cost():
     # Create LLM with pricing
     llm = LLM(
         api_key=api_key,
-        model_name="gpt-4",
+        model_name=DEFAULT_TEST_MODEL,
         pricing={"input": 30.0, "output": 60.0},  # Per million tokens
         fetch_pricing=False,
     )
@@ -108,7 +109,7 @@ def test_llm_usage_tracker_without_cost():
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
     # Create LLM without pricing
-    llm = LLM(api_key=api_key, model_name="gpt-4", pricing=None, fetch_pricing=False)
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL, pricing=None, fetch_pricing=False)
     
     # Make a query
     response = llm.query(user_prompt="Say hello")
@@ -133,7 +134,7 @@ def test_llm_usage_tracker_get_dataframe():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Make a query
     llm.query(user_prompt="Say hello")
@@ -153,7 +154,7 @@ def test_llm_usage_tracker_get_aggregated_dataframe():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Make multiple queries
     llm.query(user_prompt="Say hello")
@@ -174,7 +175,7 @@ def test_llm_get_total_usage():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Make multiple queries
     llm.query(user_prompt="Say hello")
@@ -200,7 +201,7 @@ def test_llm_get_total_cost():
     # Create LLM with pricing
     llm = LLM(
         api_key=api_key,
-        model_name="gpt-4",
+        model_name=DEFAULT_TEST_MODEL,
         pricing={"input": 30.0, "output": 60.0},  # Per million tokens
         fetch_pricing=False,
     )
@@ -226,7 +227,7 @@ def test_llm_get_total_cost_without_pricing():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4", pricing=None, fetch_pricing=False)
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL, pricing=None, fetch_pricing=False)
     
     # Make a query
     llm.query(user_prompt="Say hello")

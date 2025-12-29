@@ -3,6 +3,7 @@ Tests for Agent usage tracking by conversation.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ def test_agent_tracks_usage_by_conversation():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
 
     # Start first conversation
@@ -64,7 +65,7 @@ def test_agent_accumulates_usage_within_conversation():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
 
     agent.start_conversation(conversation_id="test_conv")
@@ -97,7 +98,7 @@ def test_agent_preserves_usage_after_conversation_deletion():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
 
     agent.start_conversation(conversation_id="temp_conv")

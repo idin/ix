@@ -3,6 +3,7 @@ Tests for Agent using file system delete operations.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -13,7 +14,7 @@ from ixmachina.tools.file_system import (
     path_exists,
     list_dir,
 )
-from ixmachina.tools.file_system.empty_dir import empty_dir
+from ixmachina.tools.file_system import empty_dir
 from ..agent_tools_file_system_constants import AGENT_FILE_SYSTEM_TEST_DIR
 
 
@@ -30,7 +31,7 @@ def test_agent_delete_file():
     with open(test_file, "w") as f:
         f.write("content")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[delete_file, path_exists])
     agent.start_conversation()
 
@@ -45,7 +46,7 @@ def test_agent_delete_file():
     assert not path_exists(test_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_delete_directory():
@@ -63,7 +64,7 @@ def test_agent_delete_directory():
     with open(file1, "w") as f:
         f.write("content1")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[delete_dir, path_exists])
     agent.start_conversation()
 
@@ -78,5 +79,5 @@ def test_agent_delete_directory():
     assert not path_exists(test_dir)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 

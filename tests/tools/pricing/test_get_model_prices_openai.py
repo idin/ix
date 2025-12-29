@@ -51,22 +51,14 @@ def test_get_openai_model_prices():
         # Check if it's a search issue or extraction issue
         if "Failed to find pricing pages" in error_msg:
             # Search failed - this is likely due to search engine HTML parsing issues
-            # The search engines (DuckDuckGo/Startpage) may have changed their HTML structure
-            # or are blocking automated requests. This is a known issue that needs to be fixed
-            # in the search_web function's HTML parsing logic.
+            # The search engine may have changed or is blocking automated requests.
             print(f"\nWARNING: Search engine returned 0 results.")
-            print(f"This indicates the HTML parsing in search_web needs to be updated.")
+            print(f"This indicates the search may need updating.")
             print(f"Error: {error_msg}")
-            print(f"\nTo fix this:")
-            print(f"1. Check if DuckDuckGo/Startpage HTML structure has changed")
-            print(f"2. Update the CSS selectors in _search_duckduckgo and _search_startpage")
-            print(f"3. Consider using a different search method or API")
-            # For now, we'll mark this as a known issue rather than failing
-            # The test structure is correct, but the search functionality needs fixing
             assert False, (
-                f"Search engine parsing issue: {error_msg}\n"
-                f"The search_web function is not finding results from DuckDuckGo/Startpage.\n"
-                f"This needs to be fixed in the HTML parsing logic."
+                f"Search engine issue: {error_msg}\n"
+                f"The search_web function is not finding results.\n"
+                f"This needs to be fixed."
             )
         else:
             # Other errors (extraction, parsing, etc.)

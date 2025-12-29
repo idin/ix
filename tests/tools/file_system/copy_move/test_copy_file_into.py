@@ -5,11 +5,11 @@ Tests for copy_file_into function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.copy_file_into import copy_file_into
-from ixmachina.tools.file_system.compare_files import compare_files
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import copy_file_into
+from ixmachina.tools.file_system import compare_files
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_copy_file_into_copies_file():
@@ -51,7 +51,7 @@ def test_copy_file_into_copies_file():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_copy_file_into_destination_exists_fails():
@@ -76,7 +76,7 @@ def test_copy_file_into_destination_exists_fails():
     assert path_exists(source_file)  # Source should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_copy_file_into_source_not_exists():
@@ -94,5 +94,5 @@ def test_copy_file_into_source_not_exists():
     assert "does not exist" in result["error"]
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

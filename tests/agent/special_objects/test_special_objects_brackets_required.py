@@ -3,6 +3,7 @@ Tests that verify brackets are required for special object references.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ def test_special_object_without_brackets_not_replaced():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     # Test that "sys:self" without brackets is NOT replaced - it stays as a string
@@ -32,7 +33,7 @@ def test_special_object_with_brackets_is_replaced():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     # Test that "[sys:self]" with brackets IS replaced
@@ -64,7 +65,7 @@ def test_special_object_without_brackets_passed_to_tool_fails():
         else:
             return f"Error: Expected Agent, got {type(agent_instance).__name__}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[tool_that_expects_agent])
     agent.start_conversation()
     

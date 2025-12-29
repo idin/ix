@@ -3,6 +3,7 @@ Tests for Agent class tool functionality with dictionary input.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -27,7 +28,7 @@ def test_agent_tool_with_dictionary_input():
         """
         return list(data.values())
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[get_dict_values])
     agent.start_conversation()
 

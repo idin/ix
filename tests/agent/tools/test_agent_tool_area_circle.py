@@ -3,6 +3,7 @@ Test for area of circle tool to debug the issue.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 import math
 
@@ -28,7 +29,7 @@ def test_agent_area_of_circle_with_proper_docstring():
         """
         return math.pi * radius ** 2
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[get_area_of_circle])
     agent.start_conversation()
 
@@ -49,7 +50,7 @@ def test_agent_area_of_circle_without_docstring():
     def get_area_of_circle(radius: float) -> float:
         return math.pi * radius ** 2
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[get_area_of_circle])
     agent.start_conversation()
 
@@ -78,7 +79,7 @@ def test_agent_area_of_circle_with_wrong_formula():
         """
         return radius ** 2 * 3  # Wrong formula (should be π * r²)
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[get_area_of_circle])
     agent.start_conversation()
 

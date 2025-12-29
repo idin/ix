@@ -3,6 +3,7 @@ Tests for Agent's ability to save and load objects using explicit tools.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -28,7 +29,7 @@ def test_agent_save_and_load_conversation_object():
         Returns:
             ObjectToSave wrapper that will be processed by the agent.
         """
-        return save_as(name=name, value=value, conversation_scoped=True)
+        return save_as(name=name, obj=value, conversation_scoped=True)
 
 
     def save_global_object(name: str, value: any):
@@ -42,7 +43,7 @@ def test_agent_save_and_load_conversation_object():
         Returns:
             ObjectToSave wrapper that will be processed by the agent.
         """
-        return save_as(name=name, value=value, conversation_scoped=False)
+        return save_as(name=name, obj=value, conversation_scoped=False)
 
 
     # Additional tools to make the agent choose from multiple options
@@ -58,7 +59,7 @@ def test_agent_save_and_load_conversation_object():
         """Format text by adding exclamation marks."""
         return f"{text}!!!"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -110,7 +111,7 @@ def test_agent_save_and_load_conversation_object():
     response1 = agent.run(
         f"Save the data {test_data} as a conversation-scoped object with the name 'test_data'. "
         "Use the appropriate tool.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Verify it was saved in conversation-scoped storage
@@ -125,7 +126,7 @@ def test_agent_save_and_load_conversation_object():
     response2 = agent.run(
         "Load the conversation-scoped object named 'test_data' and return its value. "
         "Use the appropriate tool and reference syntax.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Verify it was loaded correctly
@@ -141,7 +142,7 @@ def test_agent_save_and_load_conversation_object():
     response3 = agent.run(
         f"Save the data {global_data} as a global object with the name 'global_data'. "
         "Use the appropriate tool.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Verify it was saved in global storage
@@ -155,7 +156,7 @@ def test_agent_save_and_load_conversation_object():
     response4 = agent.run(
         "Load the global object named 'global_data' and return its value. "
         "Use the load_global_object tool.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Verify it was loaded correctly
@@ -170,11 +171,11 @@ def test_agent_saves_and_loads_multiple_objects():
 
     def save_conversation_object(name: str, value: any):
         """Save a conversation-scoped object."""
-        return save_as(name=name, value=value, conversation_scoped=True)
+        return save_as(name=name, obj=value, conversation_scoped=True)
 
     def save_global_object(name: str, value: any):
         """Save a global object."""
-        return save_as(name=name, value=value, conversation_scoped=False)
+        return save_as(name=name, obj=value, conversation_scoped=False)
 
     def multiply_numbers(a: int, b: int) -> int:
         """Multiply two numbers."""
@@ -184,7 +185,7 @@ def test_agent_saves_and_loads_multiple_objects():
         """Reverse a string."""
         return text[::-1]
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -260,26 +261,26 @@ def test_agent_saves_and_loads_multiple_objects():
     # Load conversation-scoped objects - agent just needs to call the tool with name
     result1 = agent.run(
         "Load the conversation-scoped object named 'number' and return its value.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     assert result1 == 42
 
     result2 = agent.run(
         "Load the conversation-scoped object named 'text' and return its value.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     assert result2 == "hello"
 
     # Load global objects - agent just needs to call the tool with name
     result3 = agent.run(
         "Load the global object named 'global_number' and return its value.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     assert result3 == 100
 
     result4 = agent.run(
         "Load the global object named 'global_text' and return its value.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     assert result4 == "world"
 
@@ -292,17 +293,17 @@ def test_agent_loads_from_storage_not_conversation():
 
     def save_conversation_object(name: str, value: any):
         """Save a conversation-scoped object."""
-        return save_as(name=name, value=value, conversation_scoped=True)
+        return save_as(name=name, obj=value, conversation_scoped=True)
 
     def save_global_object(name: str, value: any):
         """Save a global object."""
-        return save_as(name=name, value=value, conversation_scoped=False)
+        return save_as(name=name, obj=value, conversation_scoped=False)
 
     def get_current_time() -> str:
         """Get the current time."""
         return "2024-01-01 12:00:00"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -345,7 +346,7 @@ def test_agent_loads_from_storage_not_conversation():
     test_data = {"original": "value", "count": 100}
     agent.run(
         f"Save the data {test_data} as a conversation-scoped object with the name 'test_data'.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Verify it was saved
@@ -360,7 +361,7 @@ def test_agent_loads_from_storage_not_conversation():
     # Load it - should get the MODIFIED value, not the original
     result = agent.run(
         "Load the conversation-scoped object named 'test_data' and return its value.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Verify it loaded the MODIFIED value, proving it's loading from storage
@@ -371,7 +372,7 @@ def test_agent_loads_from_storage_not_conversation():
     global_data = {"global_original": "value", "number": 50}
     agent.run(
         f"Save the data {global_data} as a global object with the name 'global_test'.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Verify it was saved
@@ -385,7 +386,7 @@ def test_agent_loads_from_storage_not_conversation():
     # Load it - should get the MODIFIED value
     result2 = agent.run(
         "Load the global object named 'global_test' and return its value.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Verify it loaded the MODIFIED value

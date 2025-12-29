@@ -5,11 +5,11 @@ Tests for change_dir_path function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.change_dir_path import change_dir_path
-from ixmachina.tools.file_system.compare_dirs import compare_dirs
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import change_dir_path
+from ixmachina.tools.file_system import compare_dirs
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_change_dir_path_renames_directory():
@@ -44,7 +44,7 @@ def test_change_dir_path_renames_directory():
     assert path_exists(os.path.join(dest_dir, "file.txt"))  # File should be in new location
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_dir_path_destination_exists_fails():
@@ -64,7 +64,7 @@ def test_change_dir_path_destination_exists_fails():
     assert path_exists(source_dir)  # Source should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_dir_path_creates_parent_directory():
@@ -98,5 +98,5 @@ def test_change_dir_path_creates_parent_directory():
     assert path_exists(os.path.join(dest_dir, "file.txt"))
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

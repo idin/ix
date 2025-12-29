@@ -5,11 +5,11 @@ Tests for move_file_into function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.move_file_into import move_file_into
-from ixmachina.tools.file_system.compare_files import compare_files
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists, path_is_dir
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import move_file_into
+from ixmachina.tools.file_system import compare_files
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists, path_is_dir
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_move_file_into_moves_file():
@@ -42,7 +42,7 @@ def test_move_file_into_moves_file():
     assert path_exists(os.path.join(dest_dir, "file.txt"))  # File should be in dest_dir
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_file_into_destination_not_exists_fails():
@@ -63,7 +63,7 @@ def test_move_file_into_destination_not_exists_fails():
     assert path_exists(source_file)  # Source should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_file_into_destination_exists_fails():
@@ -88,7 +88,7 @@ def test_move_file_into_destination_exists_fails():
     assert path_exists(source_file)  # Source should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_file_into_source_not_exists_fails():
@@ -106,5 +106,5 @@ def test_move_file_into_source_not_exists_fails():
     assert "does not exist" in result["error"]
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

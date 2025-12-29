@@ -3,6 +3,7 @@ Tests for Agent special objects functionality.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ def test_agent_add_special_object():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     # Test adding a special object
@@ -33,7 +34,7 @@ def test_agent_add_special_object_with_dict_syntax():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     # Test adding using dict syntax
@@ -64,7 +65,7 @@ def test_agent_special_object_retrieval_in_tool():
         assert isinstance(agent_instance, Agent)
         return f"Agent received: {type(agent_instance).__name__}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[tool_with_agent])
     agent.start_conversation()
     
@@ -99,7 +100,7 @@ def test_agent_special_object_retrieval_with_llm():
         assert isinstance(llm_instance, LLM)
         return f"LLM received: {llm_instance.provider}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[tool_with_llm])
     agent.start_conversation()
     
@@ -125,7 +126,7 @@ def test_agent_special_object_not_found_error():
         """Simple tool."""
         return arg
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[simple_tool])
     
     # Manually call _add_system_objects_to_tool_arguments with non-existent special object
@@ -147,7 +148,7 @@ def test_agent_special_object_with_custom_prefix():
         assert isinstance(agent_instance, Agent)
         return f"Agent received: {type(agent_instance).__name__}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(
         llm=llm,
         tools=[tool_with_agent],
@@ -171,7 +172,7 @@ def test_agent_use_llm_in_tool():
         response = llm_instance.query(user_prompt="In one word, what is the capital of England?")
         return f"LLM response: {response}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[tool_with_llm])
     agent.start_conversation()
     response = agent.run(

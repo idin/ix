@@ -5,9 +5,8 @@ Tests for compare_dirs function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.compare_dirs import compare_dirs
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import compare_dirs, empty_dir
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_compare_dirs_single_file_same():

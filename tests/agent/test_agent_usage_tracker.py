@@ -3,6 +3,7 @@ Tests for Agent usage_tracker.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ def test_agent_usage_tracker_initialized():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     assert agent.usage_tracker is not None
@@ -29,7 +30,7 @@ def test_agent_usage_tracker_adds_record_with_conversation_id():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="conv1")
@@ -55,7 +56,7 @@ def test_agent_usage_tracker_tracks_multiple_conversations():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     # First conversation
@@ -83,7 +84,7 @@ def test_agent_usage_tracker_accumulates_within_conversation():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="test_conv")
@@ -108,7 +109,7 @@ def test_agent_usage_tracker_preserves_records_after_conversation_deletion():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="temp_conv")
@@ -135,7 +136,7 @@ def test_agent_usage_tracker_get_dataframe():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="conv1")
@@ -156,7 +157,7 @@ def test_agent_usage_tracker_get_aggregated_dataframe_by_conversation():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     # Multiple queries in first conversation
@@ -188,7 +189,7 @@ def test_agent_usage_tracker_with_multiple_llms():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -216,7 +217,7 @@ def test_agent_get_total_usage_all():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="conv1")
@@ -240,7 +241,7 @@ def test_agent_get_total_usage_by_conversation():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="conv1")
@@ -266,7 +267,7 @@ def test_agent_get_total_usage_by_llm():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -296,7 +297,7 @@ def test_agent_get_total_usage_by_llm_and_conversation():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="conv1")
@@ -326,7 +327,7 @@ def test_agent_get_total_cost_all():
 
     llm = LLM(
         api_key=api_key,
-        model_name="gpt-4",
+        model_name=DEFAULT_TEST_MODEL,
         pricing={"input": 30.0, "output": 60.0},
         fetch_pricing=False,
     )
@@ -355,7 +356,7 @@ def test_agent_get_total_cost_by_conversation():
 
     llm = LLM(
         api_key=api_key,
-        model_name="gpt-4",
+        model_name=DEFAULT_TEST_MODEL,
         pricing={"input": 30.0, "output": 60.0},
         fetch_pricing=False,
     )
@@ -384,7 +385,7 @@ def test_agent_get_total_cost_without_pricing():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4", pricing=None, fetch_pricing=False)
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL, pricing=None, fetch_pricing=False)
     agent = Agent(llm=llm)
     
     agent.start_conversation(conversation_id="conv1")

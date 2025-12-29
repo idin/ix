@@ -61,18 +61,13 @@ def test_extract_domain_http_scheme():
     assert result == "example.com"
 
 
-def test_extract_domain_keep_www():
-    """Test extract_domain with remove_www=False."""
-    result = extract_domain("https://www.example.com/path", remove_www=False)
-    
-    assert result == "www.example.com"
 
 
 def test_extract_domain_subdomain():
     """Test extract_domain with subdomain."""
     result = extract_domain("https://subdomain.example.com/path")
     
-    assert result == "subdomain.example.com"
+    assert result == "example.com"
 
 
 def test_extract_domain_empty_string():
@@ -123,4 +118,60 @@ def test_extract_domain_stackoverflow():
     result = extract_domain("https://stackoverflow.com/users/{username}")
     
     assert result == "stackoverflow.com"
+
+
+def test_extract_domain_co_uk_with_www():
+    """Test extract_domain with .co.uk domain including www."""
+    result = extract_domain("https://www.bbc.co.uk/news")
+    
+    assert result == "bbc.co.uk"
+
+
+def test_extract_domain_co_uk_without_www():
+    """Test extract_domain with .co.uk domain without www."""
+    result = extract_domain("https://bbc.co.uk/news")
+    
+    assert result == "bbc.co.uk"
+
+
+def test_extract_domain_co_uk_with_path():
+    """Test extract_domain with .co.uk domain and path."""
+    result = extract_domain("https://www.example.co.uk/path/to/page")
+    
+    assert result == "example.co.uk"
+
+
+def test_extract_domain_co_uk_just_domain():
+    """Test extract_domain with just .co.uk domain."""
+    result = extract_domain("example.co.uk")
+    
+    assert result == "example.co.uk"
+
+
+def test_extract_domain_co_uk_with_subdomain():
+    """Test extract_domain with .co.uk domain and subdomain."""
+    result = extract_domain("https://www.subdomain.example.co.uk/path")
+    
+    assert result == "example.co.uk"
+
+
+def test_extract_domain_ww2_subdomain():
+    """Test extract_domain with ww2 subdomain."""
+    result = extract_domain("https://ww2.example.com/path")
+    
+    assert result == "example.com"
+
+
+def test_extract_domain_www2_subdomain():
+    """Test extract_domain with www2 subdomain."""
+    result = extract_domain("https://www2.example.com/path")
+    
+    assert result == "example.com"
+
+
+def test_extract_domain_ww2_co_uk():
+    """Test extract_domain with ww2 subdomain and .co.uk domain."""
+    result = extract_domain("https://ww2.example.co.uk/path")
+    
+    assert result == "example.co.uk"
 

@@ -3,6 +3,7 @@ Test for tool error handling.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -30,7 +31,7 @@ def test_agent_tool_error_handling():
             raise ValueError("Cannot divide by zero")
         return a / b
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[divide_numbers])
     agent.start_conversation()
 
@@ -72,7 +73,7 @@ def test_agent_tool_type_error():
         # This will fail if a or b is not a number
         return a + b
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[add_numbers])
     agent.start_conversation()
 
@@ -104,7 +105,7 @@ def test_agent_tool_missing_argument():
         """
         return a * b * c
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[multiply])
     agent.start_conversation()
 

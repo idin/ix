@@ -5,9 +5,8 @@ Tests for list_dir_contents function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.list_dir_contents import list_dir_contents
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import list_dir_contents, empty_dir
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_list_dir_contents_separates_files_and_directories():
@@ -28,7 +27,7 @@ def test_list_dir_contents_separates_files_and_directories():
     os.makedirs(test_dir1)
     os.makedirs(test_dir2)
 
-    result = list_dir_contents(directory_path=FILE_SYSTEM_TEST_DIR)
+    result = list_dir_contents(path=FILE_SYSTEM_TEST_DIR)
 
     assert result["success"] is True
     assert result["error"] is None
@@ -64,7 +63,7 @@ def test_list_dir_contents_with_empty_directory():
     # Create test directory
     os.makedirs(FILE_SYSTEM_TEST_DIR, exist_ok=True)
 
-    result = list_dir_contents(directory_path=FILE_SYSTEM_TEST_DIR)
+    result = list_dir_contents(path=FILE_SYSTEM_TEST_DIR)
 
     assert result["success"] is True
     assert result["error"] is None
@@ -77,7 +76,7 @@ def test_list_dir_contents_with_empty_directory():
 
 def test_list_dir_contents_with_nonexistent_directory():
     """Test list_dir_contents returns error for non-existent directory."""
-    result = list_dir_contents(directory_path="/nonexistent/path/that/does/not/exist")
+    result = list_dir_contents(path="/nonexistent/path/that/does/not/exist")
     
     assert result["success"] is False
     assert result["error"] is not None
@@ -100,7 +99,7 @@ def test_list_dir_contents_excludes_hidden_files():
     with open(visible_file, "w") as f:
         f.write("visible")
 
-    result = list_dir_contents(directory_path=FILE_SYSTEM_TEST_DIR, include_hidden=False)
+    result = list_dir_contents(path=FILE_SYSTEM_TEST_DIR, include_hidden=False)
 
     assert result["success"] is True
     file_names = [f["name"] for f in result["files"]]
@@ -121,7 +120,7 @@ def test_list_dir_contents_includes_hidden_files():
     with open(hidden_file, "w") as f:
         f.write("hidden")
 
-    result = list_dir_contents(directory_path=FILE_SYSTEM_TEST_DIR, include_hidden=True)
+    result = list_dir_contents(path=FILE_SYSTEM_TEST_DIR, include_hidden=True)
 
     assert result["success"] is True
     file_names = [f["name"] for f in result["files"]]

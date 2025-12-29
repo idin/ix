@@ -3,6 +3,7 @@ Tests for Agent save_as functionality.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -53,7 +54,7 @@ def test_agent_saves_and_retrieves_weird_class():
             value=value,
             metadata={"created_by": "test", "version": 1}
         )
-        return Agent.save_as(name="my_weird_object", value=weird_obj)
+        return Agent.save_as(name="my_weird_object", obj=weird_obj)
 
     def use_saved_object(weird_object: WeirdClass) -> str:
         """
@@ -68,14 +69,14 @@ def test_agent_saves_and_retrieves_weird_class():
         assert isinstance(weird_object, WeirdClass)
         return f"Object name: {weird_object.name}, value: {weird_object.value}, metadata: {weird_object.metadata}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[create_weird_object, use_saved_object])
     agent.start_conversation()
 
     # First, create and save the weird object
     response1 = agent.run(
         "Call create_weird_object with name='test_obj' and value=42. Save the result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # The result should be the WeirdClass instance (not wrapped in ObjectToSave)
@@ -93,7 +94,7 @@ def test_agent_saves_and_retrieves_weird_class():
     # Now use the saved object in another tool
     response2 = agent.run(
         "Call use_saved_object with weird_object set to '[obj:my_weird_object]'. Return only the tool result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Should return the string description
@@ -121,9 +122,9 @@ def test_agent_saves_object_in_list():
         obj3 = WeirdClass("third", 30, {"type": "saved"})
         
         return [
-            Agent.save_as(name="first_obj", value=obj1),
+            Agent.save_as(name="first_obj", obj=obj1),
             obj2,  # Not saved
-            Agent.save_as(name="third_obj", value=obj3),
+            Agent.save_as(name="third_obj", obj=obj3),
         ]
 
     def use_first_object(obj: WeirdClass) -> str:
@@ -138,14 +139,14 @@ def test_agent_saves_object_in_list():
         """
         return f"First object: {obj.name}, value: {obj.value}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[create_multiple_objects, use_first_object])
     agent.start_conversation()
 
     # Create and save objects
     response1 = agent.run(
         "Call create_multiple_objects. Return only the tool result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Should return a list with WeirdClass instances (ObjectToSave unwrapped)
@@ -164,7 +165,7 @@ def test_agent_saves_object_in_list():
     # Use the first saved object
     response2 = agent.run(
         "Call use_first_object with obj set to '[obj:first_obj]'. Return only the tool result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response2, str)
@@ -189,10 +190,10 @@ def test_agent_saves_object_in_dict():
         obj2 = WeirdClass("beta", 200, {"group": "B"})
         
         return {
-            "saved": Agent.save_as(name="alpha_obj", value=obj1),
+            "saved": Agent.save_as(name="alpha_obj", obj=obj1),
             "unsaved": obj2,
             "nested": {
-                "deep": Agent.save_as(name="beta_obj", value=obj2),
+                "deep": Agent.save_as(name="beta_obj", obj=obj2),
             }
         }
 
@@ -208,14 +209,14 @@ def test_agent_saves_object_in_dict():
         """
         return f"Alpha: {obj.name}, {obj.value}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[create_object_dict, use_alpha_object])
     agent.start_conversation()
 
     # Create and save objects
     response1 = agent.run(
         "Call the create_object_dict function. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Should return a dict with WeirdClass instances (ObjectToSave unwrapped)
@@ -233,7 +234,7 @@ def test_agent_saves_object_in_dict():
     # Use the alpha saved object
     response2 = agent.run(
         "Call use_alpha_object with obj set to '[obj:alpha_obj]'. Return only the tool result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response2, str)

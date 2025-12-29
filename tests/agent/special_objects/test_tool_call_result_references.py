@@ -3,6 +3,7 @@ Tests for tool call result references: [tool_obj:conversation_id:tool_call_id].
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -33,14 +34,14 @@ def test_tool_call_result_reference_resolution():
         assert data["result"] == "first_tool_data"
         return f"Received: {data['result']}, value: {data['value']}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[first_tool, second_tool])
     agent.start_conversation()
 
     # First, call first_tool to get a result
     response1 = agent.run(
         "Call first_tool and remember the tool_call_id from the result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Get the tool_call_id from the conversation
@@ -59,7 +60,7 @@ def test_tool_call_result_reference_resolution():
     response2 = agent.run(
         f"Call second_tool with data='[tool_obj:{conversation_id}:{first_tool_call_id}]'. "
         "Return only the tool result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response2, str)
@@ -90,13 +91,13 @@ def test_tool_call_result_reference_brackets_required():
         assert isinstance(data, dict)
         return f"Received: {data['result']}, value: {data['value']}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[first_tool, second_tool])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
 
     # Call first_tool to create a tool call result
-    agent.run("Call first_tool.", return_raw_tool_result=True)
+    agent.run("Call first_tool.", return_mode="tool_output_value")
     
     # Get the tool_call_id
     assert conversation_id in agent.conversation_tool_calls

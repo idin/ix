@@ -3,6 +3,7 @@ Tests for Agent using file system copy operations (clone, copy_into).
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ from ixmachina.tools.file_system import (
     compare_files,
     compare_dirs,
 )
-from ixmachina.tools.file_system.empty_dir import empty_dir
+from ixmachina.tools.file_system import empty_dir
 from ..agent_tools_file_system_constants import AGENT_FILE_SYSTEM_TEST_DIR
 
 
@@ -33,7 +34,7 @@ def test_agent_clone_file():
     with open(source_file, "w") as f:
         f.write("original content")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[clone_to_path, path_exists, compare_files])
     agent.start_conversation()
 
@@ -54,7 +55,7 @@ def test_agent_clone_file():
     assert compare_result["are_equal"] is True
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_clone_directory():
@@ -76,7 +77,7 @@ def test_agent_clone_directory():
     with open(file2, "w") as f:
         f.write("content2")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[clone_to_path, path_exists, compare_dirs])
     agent.start_conversation()
 
@@ -97,7 +98,7 @@ def test_agent_clone_directory():
     assert compare_result["are_equal"] is True
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_copy_file_into_directory():
@@ -115,7 +116,7 @@ def test_agent_copy_file_into_directory():
     with open(source_file, "w") as f:
         f.write("file content")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[copy_into, list_dir, path_exists])
     agent.start_conversation()
 
@@ -133,5 +134,5 @@ def test_agent_copy_file_into_directory():
     assert path_exists(copied_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 

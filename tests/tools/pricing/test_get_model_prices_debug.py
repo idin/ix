@@ -6,7 +6,7 @@ import os
 
 from ixmachina.tools.pricing import get_model_prices
 from ixmachina.tools.web import search_web, fetch_url, extract_from_page
-from ixmachina.tools.web.parse_html import extract_text
+from ixmachina.tools.web import extract_text
 from ixmachina.tools.string import smart_truncate_text
 from ixmachina.llm import LLM, EnvVar
 
@@ -22,8 +22,8 @@ def test_debug_extraction_process():
     search_result = search_web(
         query="openai model pricing per million tokens",
         max_results=5,
-        search_engine="duckduckgo",
-        domain_filter="openai.com",
+        search_engine="brave",
+        domain_whitelist="openai.com",
     )
     
     assert search_result["success"] is True, f"Search failed: {search_result.get('error')}"

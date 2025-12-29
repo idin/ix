@@ -3,6 +3,7 @@ Tests for Agent save_as multiple objects functionality.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -80,7 +81,7 @@ def test_agent_saves_multiple_objects_with_kwargs():
         assert isinstance(obj, WeirdClass)
         return f"Second: {obj.name}, {obj.value}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(
         llm=llm,
         tools=[create_and_save_multiple, use_first_object, use_second_object]
@@ -90,7 +91,7 @@ def test_agent_saves_multiple_objects_with_kwargs():
     # Create and save multiple objects
     response1 = agent.run(
         "Call create_and_save_multiple. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Should return a list of WeirdClass instances (ObjectsToSave unwrapped)
@@ -120,7 +121,7 @@ def test_agent_saves_multiple_objects_with_kwargs():
     # Use the first saved object
     response2 = agent.run(
         "Call use_first_object with obj set to '[obj:first_obj]'. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response2, str)
@@ -130,7 +131,7 @@ def test_agent_saves_multiple_objects_with_kwargs():
     # Use the second saved object
     response3 = agent.run(
         "Call use_second_object with obj set to '[obj:second_obj]'. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response3, str)
@@ -187,7 +188,7 @@ def test_agent_saves_multiple_mixed_types():
         """
         return f"Text is: {text}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(
         llm=llm,
         tools=[create_mixed_objects, use_saved_number, use_saved_text]
@@ -197,7 +198,7 @@ def test_agent_saves_multiple_mixed_types():
     # Create and save mixed objects
     response1 = agent.run(
         "Call create_mixed_objects. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Should return a list with different types
@@ -224,7 +225,7 @@ def test_agent_saves_multiple_mixed_types():
     # Use the saved number
     response2 = agent.run(
         "Call use_saved_number with num set to '[obj:number]'. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response2, str)
@@ -233,7 +234,7 @@ def test_agent_saves_multiple_mixed_types():
     # Use the saved text
     response3 = agent.run(
         "Call use_saved_text with text set to '[obj:text]'. Execute the tool and return only the tool result. Do not show the function call or any other text.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response3, str)

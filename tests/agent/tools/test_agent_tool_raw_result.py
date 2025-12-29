@@ -3,6 +3,7 @@ Tests for Agent class raw tool result functionality.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -28,14 +29,14 @@ def test_agent_returns_raw_tool_result_single():
         """
         return a + b
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[add_numbers])
     agent.start_conversation()
 
     # Ask to add numbers - should return raw integer result
     result = agent.run(
         "Add 5 and 3 together. Call the tool and return only the result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Should return the raw integer result, not a string
@@ -75,14 +76,14 @@ def test_agent_returns_raw_tool_result_multiple():
         """
         return a - b
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[multiply, subtract])
     agent.start_conversation()
 
     # Ask to perform multiple operations - should return list of raw results
     result = agent.run(
         "Multiply 4 by 3, then subtract 2 from 10. Call both tools and return only the results.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Should return a list of raw integer results
@@ -94,19 +95,19 @@ def test_agent_returns_raw_tool_result_multiple():
 
 
 def test_agent_returns_string_when_no_tool_called():
-    """Test agent returns string response when return_raw_tool_result is True but no tool is called."""
+    """Test agent returns string response when return_mode is tool_output_value but no tool is called."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[])
     agent.start_conversation()
 
     # Ask a simple question that doesn't require tools
     result = agent.run(
         "What is the capital of France?",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
 
     # Should return string response since no tool was called

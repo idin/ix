@@ -5,12 +5,12 @@ Tests for clone_to_path function (works with both files and directories).
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.clone_to_path import clone_to_path
-from ixmachina.tools.file_system.compare_files import compare_files
-from ixmachina.tools.file_system.compare_dirs import compare_dirs
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import clone_to_path
+from ixmachina.tools.file_system import compare_files
+from ixmachina.tools.file_system import compare_dirs
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_clone_to_path_with_file():
@@ -45,7 +45,7 @@ def test_clone_to_path_with_file():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_clone_to_path_with_directory():
@@ -85,5 +85,5 @@ def test_clone_to_path_with_directory():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

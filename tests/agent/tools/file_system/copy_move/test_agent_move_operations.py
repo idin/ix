@@ -3,6 +3,7 @@ Tests for Agent using file system move operations (change_path, move_into).
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -13,7 +14,7 @@ from ixmachina.tools.file_system import (
     path_exists,
     list_dir,
 )
-from ixmachina.tools.file_system.empty_dir import empty_dir
+from ixmachina.tools.file_system import empty_dir
 from ..agent_tools_file_system_constants import AGENT_FILE_SYSTEM_TEST_DIR
 
 
@@ -31,7 +32,7 @@ def test_agent_move_file_to_new_path():
     with open(source_file, "w") as f:
         f.write("file content")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[change_path, path_exists])
     agent.start_conversation()
 
@@ -52,7 +53,7 @@ def test_agent_move_file_to_new_path():
         assert f.read() == "file content"
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_move_directory_to_new_path():
@@ -71,7 +72,7 @@ def test_agent_move_directory_to_new_path():
     with open(file1, "w") as f:
         f.write("content1")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[change_path, path_exists])
     agent.start_conversation()
 
@@ -91,7 +92,7 @@ def test_agent_move_directory_to_new_path():
     assert path_exists(moved_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_move_file_into_directory():
@@ -109,7 +110,7 @@ def test_agent_move_file_into_directory():
     with open(source_file, "w") as f:
         f.write("file content")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[move_into, list_dir, path_exists])
     agent.start_conversation()
 
@@ -127,5 +128,5 @@ def test_agent_move_file_into_directory():
     assert path_exists(moved_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 

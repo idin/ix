@@ -5,12 +5,14 @@ Tests for copy_into function (works with both files and directories).
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.copy_into import copy_into
-from ixmachina.tools.file_system.compare_files import compare_files
-from ixmachina.tools.file_system.compare_dirs import compare_dirs
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import (
+    copy_into,
+    compare_files,
+    compare_dirs,
+    empty_dir,
+    path_exists,
+)
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_copy_into_with_file():
@@ -51,7 +53,7 @@ def test_copy_into_with_file():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_copy_into_with_directory():
@@ -97,5 +99,5 @@ def test_copy_into_with_directory():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

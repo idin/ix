@@ -3,6 +3,7 @@ Tests for Agent class with multiple LLMs.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ def test_agent_initialization_with_multiple_llms_dict():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2})
@@ -35,7 +36,7 @@ def test_agent_initialization_with_multiple_llms_and_default_key():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt35")
@@ -50,7 +51,7 @@ def test_agent_initialization_with_multiple_llms_and_default_instance():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm=llm2)
@@ -64,7 +65,7 @@ def test_agent_initialization_with_single_llm():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm)
     
     assert len(agent.llms) == 1
@@ -79,7 +80,7 @@ def test_agent_run_with_different_llm_by_key():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -105,7 +106,7 @@ def test_agent_run_with_different_llm_by_instance():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -126,7 +127,7 @@ def test_agent_run_with_default_llm():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -146,7 +147,7 @@ def test_agent_switch_default_llm_by_key():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -167,7 +168,7 @@ def test_agent_switch_default_llm_by_instance():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -184,7 +185,7 @@ def test_agent_switch_default_llm_updates_special_objects():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -209,7 +210,7 @@ def test_agent_error_invalid_llm_key_in_run():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm={"gpt4": llm})
     agent.start_conversation(conversation_id="test")
     
@@ -223,7 +224,7 @@ def test_agent_error_invalid_llm_instance_in_run():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1})
@@ -240,7 +241,7 @@ def test_agent_error_invalid_default_llm_key():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     with pytest.raises(KeyError, match="Default LLM key 'invalid' not found"):
         Agent(llm={"gpt4": llm}, default_llm="invalid")
@@ -252,7 +253,7 @@ def test_agent_error_invalid_default_llm_instance():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     # llm2 is not in the llms dictionary
@@ -266,7 +267,7 @@ def test_agent_error_invalid_switch_default_llm_key():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm={"gpt4": llm})
     
     with pytest.raises(KeyError, match="LLM key 'invalid' not found"):
@@ -279,7 +280,7 @@ def test_agent_error_invalid_switch_default_llm_instance():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1})
@@ -295,7 +296,7 @@ def test_agent_different_conversations_different_llms():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -321,7 +322,7 @@ def test_agent_usage_tracking_per_llm():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -357,7 +358,7 @@ def test_agent_llm_special_object_with_multiple_llms():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -378,7 +379,7 @@ def test_agent_llm_name_special_objects():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(llm={"gpt4": llm1, "gpt35": llm2}, default_llm="gpt4")
@@ -409,7 +410,7 @@ def test_agent_tool_using_llm_name_special_object():
         assert isinstance(llm_instance, LLM)
         return f"LLM received: {llm_instance.model_name}"
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(
@@ -421,7 +422,7 @@ def test_agent_tool_using_llm_name_special_object():
     
     # Ask agent to use the tool with llm:gpt35 special object
     response = agent.run(
-        "Call the tool_with_specific_llm function with the parameter llm_instance set to 'use:llm:gpt35'. "
+        "Call the tool_with_specific_llm function with the parameter llm_instance set to '[sys:llm:gpt35]'. "
         "Return the complete tool result exactly as the tool returns it, without modification."
     )
     
@@ -450,7 +451,7 @@ def test_agent_tool_using_default_llm_special_object():
         assert isinstance(llm_instance, LLM)
         return f"Default LLM received: {llm_instance.model_name}"
 
-    llm1 = LLM(api_key=api_key, model_name="gpt-4")
+    llm1 = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     llm2 = LLM(api_key=api_key, model_name="gpt-3.5-turbo")
     
     agent = Agent(
@@ -462,7 +463,7 @@ def test_agent_tool_using_default_llm_special_object():
     
     # Ask agent to use the tool with 'llm' special object (default)
     response = agent.run(
-        "Call the tool_with_default_llm function with the parameter llm_instance set to 'use:llm'. "
+        "Call the tool_with_default_llm function with the parameter llm_instance set to '[sys:llm]'. "
         "Return the complete tool result exactly as the tool returns it, without modification."
     )
     

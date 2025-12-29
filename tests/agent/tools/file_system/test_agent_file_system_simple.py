@@ -3,6 +3,7 @@ Tests for Agent using file system tools with simple prompts.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -13,7 +14,7 @@ from ixmachina.tools.file_system import (
     path_is_file,
     path_is_dir,
 )
-from ixmachina.tools.file_system.empty_dir import empty_dir
+from ixmachina.tools.file_system import empty_dir
 from .agent_tools_file_system_constants import AGENT_FILE_SYSTEM_TEST_DIR
 
 
@@ -33,7 +34,7 @@ def test_agent_list_directory_contents():
     with open(test_file2, "w") as f:
         f.write("content2")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[list_dir, path_exists])
     agent.start_conversation()
 
@@ -48,7 +49,7 @@ def test_agent_list_directory_contents():
     assert "file1" in response.lower() or "file2" in response.lower()
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_check_if_path_exists():
@@ -63,7 +64,7 @@ def test_agent_check_if_path_exists():
     with open(test_file, "w") as f:
         f.write("test content")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[path_exists, path_is_file, path_is_dir])
     agent.start_conversation()
 
@@ -78,7 +79,7 @@ def test_agent_check_if_path_exists():
     assert "exist" in response.lower() or "file" in response.lower()
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_check_nonexistent_path():
@@ -90,7 +91,7 @@ def test_agent_check_nonexistent_path():
     os.makedirs(AGENT_FILE_SYSTEM_TEST_DIR, exist_ok=True)
     nonexistent_path = os.path.join(AGENT_FILE_SYSTEM_TEST_DIR, "nonexistent.txt")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[path_exists])
     agent.start_conversation()
 
@@ -105,5 +106,5 @@ def test_agent_check_nonexistent_path():
     assert "not" in response.lower() or "doesn't" in response.lower() or "no" in response.lower()
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 

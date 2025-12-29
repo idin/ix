@@ -5,11 +5,11 @@ Tests for clone_file_to_path function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.clone_file_to_path import clone_file_to_path
-from ixmachina.tools.file_system.compare_files import compare_files
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import clone_file_to_path
+from ixmachina.tools.file_system import compare_files
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_clone_file_to_path_copies_file():
@@ -45,7 +45,7 @@ def test_clone_file_to_path_copies_file():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_clone_file_to_path_destination_exists_fails():
@@ -68,7 +68,7 @@ def test_clone_file_to_path_destination_exists_fails():
     assert path_exists(source_file)  # Source should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_clone_file_to_path_creates_parent_directory():
@@ -98,7 +98,7 @@ def test_clone_file_to_path_creates_parent_directory():
     assert path_exists(dest_file)
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_clone_file_to_path_binary_content():
@@ -133,7 +133,7 @@ def test_clone_file_to_path_binary_content():
     assert compare_result["are_equal"] is True
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_clone_file_to_path_source_not_exists():
@@ -150,5 +150,5 @@ def test_clone_file_to_path_source_not_exists():
     assert "does not exist" in result["error"]
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

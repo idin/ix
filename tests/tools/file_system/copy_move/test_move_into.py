@@ -5,10 +5,10 @@ Tests for move_into function (works with both files and directories).
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.move_into import move_into
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import move_into
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_move_into_with_file():
@@ -40,7 +40,7 @@ def test_move_into_with_file():
     assert path_exists(os.path.join(dest_dir, "file.txt"))
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_move_into_with_directory():
@@ -77,5 +77,5 @@ def test_move_into_with_directory():
     assert path_exists(os.path.join(dest_dir, "source_dir", "file.txt"))
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

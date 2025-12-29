@@ -3,6 +3,7 @@ Tests for LLM class.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM, EnvVar
@@ -16,12 +17,12 @@ def test_initialization_with_openai_provider():
 
     llm = LLM(
         api_key=api_key,
-        model_name="gpt-4",
+        model_name=DEFAULT_TEST_MODEL,
         provider="openai",
     )
 
     assert llm.api_key == api_key
-    assert llm.model_name == "gpt-4"
+    assert llm.model_name == DEFAULT_TEST_MODEL
     assert llm.provider == "openai"
     assert llm.client is not None
 
@@ -50,7 +51,7 @@ def test_auto_detects_openai_provider_from_gpt_model_name():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
 
     assert llm.provider == "openai"
 
@@ -84,7 +85,7 @@ def test_initialization_with_env_var_reads_from_environment():
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
     env_var = EnvVar("OPENAI_API_KEY")
-    llm = LLM(api_key=env_var, model_name="gpt-4")
+    llm = LLM(api_key=env_var, model_name=DEFAULT_TEST_MODEL)
 
     assert llm.api_key == api_key
     assert llm.provider == "openai"
@@ -96,7 +97,7 @@ def test_query_with_user_prompt():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(user_prompt="Say hello in one word")
 
     assert isinstance(response, str)
@@ -109,7 +110,7 @@ def test_query_with_system_and_user_prompt():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(
         user_prompt="Say hello",
         system_prompt="You are a helpful assistant",
@@ -125,7 +126,7 @@ def test_query_with_messages_as_string():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(messages="Say hello in one word")
 
     assert isinstance(response, str)
@@ -138,7 +139,7 @@ def test_query_with_messages_as_single_dictionary():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(messages={"role": "user", "content": "Say hello in one word"})
 
     assert isinstance(response, str)
@@ -151,7 +152,7 @@ def test_query_with_messages_as_list():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     messages = [
         {"role": "user", "content": "Say hello"},
         {"role": "assistant", "content": "Hello!"},
@@ -169,7 +170,7 @@ def test_query_with_max_tokens_parameter():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(
         user_prompt="Count from 1 to 5",
         max_tokens=10,
@@ -185,7 +186,7 @@ def test_query_with_temperature_parameter():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(
         user_prompt="Say hello",
         temperature=0.7,
@@ -201,7 +202,7 @@ def test_query_with_max_tokens_and_temperature_parameters():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(
         user_prompt="Say hello",
         max_tokens=10,
@@ -231,7 +232,7 @@ def test_query_raises_error_when_no_prompt_provided():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
 
     with pytest.raises(ValueError, match="Either user_prompt or messages must be provided"):
         llm.query()
@@ -243,7 +244,7 @@ def test_query_raises_error_for_invalid_message_dictionary():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
 
     with pytest.raises(
         ValueError, match="Message dictionary must contain 'role' and 'content' keys"
@@ -257,7 +258,7 @@ def test_query_raises_error_for_invalid_messages_type():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
 
     with pytest.raises(
         ValueError, match="messages must be a string, dictionary, or list of dictionaries"
@@ -271,7 +272,7 @@ def test_query_what_is_capital_of_france():
     if not api_key:
         pytest.skip("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     response = llm.query(user_prompt="What is the capital of France?")
 
     assert isinstance(response, str)

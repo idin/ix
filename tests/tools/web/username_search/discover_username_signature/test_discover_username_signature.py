@@ -3,6 +3,7 @@ Tests for discover_username_signature function (public API).
 """
 
 from ixmachina.tools.web import discover_username_signature
+from tests.api_keys import get_brave_api_key
 
 
 def test_discover_username_signature_with_url_pattern_github():
@@ -25,6 +26,7 @@ def test_discover_username_signature_with_domain_github():
     """Test discover_username_signature with GitHub domain (should discover pattern first)."""
     result = discover_username_signature(
         domain="github.com",
+        brave_api_key=get_brave_api_key(),
     )
     
     assert result["success"] is True
@@ -42,6 +44,7 @@ def test_discover_username_signature_with_domain_reddit():
     """Test discover_username_signature with Reddit domain."""
     result = discover_username_signature(
         domain="reddit.com",
+        brave_api_key=get_brave_api_key(),
     )
     
     assert result["success"] is True
@@ -76,6 +79,7 @@ def test_discover_username_signature_with_domain_and_existing_username():
     result = discover_username_signature(
         domain="github.com",
         existing_username="octocat",
+        brave_api_key=get_brave_api_key(),
     )
     
     assert result["success"] is True

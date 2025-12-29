@@ -3,6 +3,7 @@ Tests for conversation-scoped saved objects: [conv_obj:conversation_id:object_na
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -40,7 +41,7 @@ def test_conversation_scoped_saved_object():
             TestData instance.
         """
         data = TestData(name=name, value=value)
-        return save_as(name="conversation_data", value=data, conversation_scoped=True)
+        return save_as(name="conversation_data", obj=data, conversation_scoped=True)
 
     def use_conversation_data(data: TestData) -> str:
         """
@@ -55,7 +56,7 @@ def test_conversation_scoped_saved_object():
         assert isinstance(data, TestData)
         return f"Data: {data.name}, value: {data.value}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[save_conversation_data, use_conversation_data])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -63,7 +64,7 @@ def test_conversation_scoped_saved_object():
     # Save conversation-scoped data
     response1 = agent.run(
         "Call save_conversation_data with name='test' and value=100. Save the result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     # Verify it was saved in conversation-scoped storage
@@ -81,7 +82,7 @@ def test_conversation_scoped_saved_object():
     response2 = agent.run(
         f"Call use_conversation_data with data='[conv_obj:{conversation_id}:conversation_data]'. "
         "Return only the tool result.",
-        return_raw_tool_result=True,
+        return_mode="tool_output_value",
     )
     
     assert isinstance(response2, str)
@@ -97,9 +98,9 @@ def test_conversation_scoped_saved_object_deleted_on_conversation_reset():
 
     def save_data(value: int):
         """Save conversation-scoped data."""
-        return save_as(name="data", value=value, conversation_scoped=True)
+        return save_as(name="data", obj=value, conversation_scoped=True)
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[save_data])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -128,9 +129,9 @@ def test_conversation_scoped_saved_object_deleted_on_conversation_forget():
 
     def save_data(value: int):
         """Save conversation-scoped data."""
-        return save_as(name="data", value=value, conversation_scoped=True)
+        return save_as(name="data", obj=value, conversation_scoped=True)
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[save_data])
     agent.start_conversation(conversation_id="test_conv")
 
@@ -166,7 +167,7 @@ def test_conversation_scoped_saved_object_not_found():
         """
         return str(data)
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[use_data])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -191,11 +192,11 @@ def test_conversation_scoped_vs_global_saved_objects():
 
     def save_both(conv_value: int, global_value: int):
         """Save both conversation-scoped and global objects."""
-        conv_data = save_as(name="data", value=conv_value, conversation_scoped=True)
-        global_data = save_as(name="data", value=global_value, conversation_scoped=False)
+        conv_data = save_as(name="data", obj=conv_value, conversation_scoped=True)
+        global_data = save_as(name="data", obj=global_value, conversation_scoped=False)
         return {"conv": conv_data, "global": global_data}
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[save_both])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -220,7 +221,7 @@ def test_conversation_scoped_saved_object_brackets_required():
 
     def save_data():
         """Save conversation-scoped data."""
-        return save_as(name="test_data", value=TestData(name="test", value=42), conversation_scoped=True)
+        return save_as(name="test_data", obj=TestData(name="test", value=42), conversation_scoped=True)
 
     def use_data(data: TestData) -> str:
         """
@@ -235,7 +236,7 @@ def test_conversation_scoped_saved_object_brackets_required():
         assert isinstance(data, TestData)
         return f"Data: {data.name}, value: {data.value}"
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[save_data, use_data])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
@@ -268,19 +269,19 @@ def test_save_as_conversation_scoped_parameter():
 
     def save_conv_data():
         """Save conversation-scoped data."""
-        return save_as(name="conv_data", value=100, conversation_scoped=True)
+        return save_as(name="conv_data", obj=100, conversation_scoped=True)
 
     def save_global_data():
         """Save global data."""
-        return save_as(name="global_data", value=200, conversation_scoped=False)
+        return save_as(name="global_data", obj=200, conversation_scoped=False)
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[save_conv_data, save_global_data])
     agent.start_conversation()
     conversation_id = agent.current_conversation_id
 
     # Save conversation-scoped data
-    result1 = agent.run("Call save_conv_data. Save the result.", return_raw_tool_result=True)
+    result1 = agent.run("Call save_conv_data. Save the result.", return_mode="tool_output_value")
     assert result1 == 100
     
     # Verify it's in conversation-scoped storage, NOT global
@@ -290,7 +291,7 @@ def test_save_as_conversation_scoped_parameter():
     assert "conv_data" not in agent._global_objects
 
     # Save global data
-    result2 = agent.run("Call save_global_data. Save the result.", return_raw_tool_result=True)
+    result2 = agent.run("Call save_global_data. Save the result.", return_mode="tool_output_value")
     assert result2 == 200
     
     # Verify it's in global storage, NOT conversation-scoped

@@ -3,6 +3,7 @@ Tests for Agent using file system undo operations.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -16,7 +17,7 @@ from ixmachina.tools.file_system import (
     FileSystemMemory,
     undo,
 )
-from ixmachina.tools.file_system.empty_dir import empty_dir
+from ixmachina.tools.file_system import empty_dir
 from ..agent_tools_file_system_constants import AGENT_FILE_SYSTEM_TEST_DIR
 
 
@@ -35,7 +36,7 @@ def test_agent_undo_file_operation():
         f.write("original content")
 
     file_system_memory = FileSystemMemory()
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[change_path, undo])
     agent.start_conversation()
     
@@ -55,7 +56,7 @@ def test_agent_undo_file_operation():
     assert not path_exists(dest_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_undo_delete_operation():
@@ -72,7 +73,7 @@ def test_agent_undo_delete_operation():
         f.write("content")
 
     file_system_memory = FileSystemMemory()
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[delete_file, undo])
     agent.start_conversation()
     
@@ -91,7 +92,7 @@ def test_agent_undo_delete_operation():
     assert path_exists(test_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_undo_clone_operation():
@@ -109,7 +110,7 @@ def test_agent_undo_clone_operation():
         f.write("original content")
 
     file_system_memory = FileSystemMemory()
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[clone_to_path, undo])
     agent.start_conversation()
     
@@ -130,7 +131,7 @@ def test_agent_undo_clone_operation():
     assert not path_exists(cloned_file)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 
 
 def test_agent_undo_delete_directory_operation():
@@ -149,7 +150,7 @@ def test_agent_undo_delete_directory_operation():
         f.write("content1")
 
     file_system_memory = FileSystemMemory()
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     agent = Agent(llm=llm, tools=[delete_dir, undo])
     agent.start_conversation()
     
@@ -169,5 +170,5 @@ def test_agent_undo_delete_directory_operation():
     assert path_exists(file1)
 
     # Clean up
-    empty_dir(dir_path=AGENT_FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=AGENT_FILE_SYSTEM_TEST_DIR)
 

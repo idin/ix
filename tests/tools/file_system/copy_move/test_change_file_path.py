@@ -5,11 +5,11 @@ Tests for change_file_path function.
 import pytest
 import os
 
-from ixmachina.tools.file_system.copy_move.change_file_path import change_file_path
-from ixmachina.tools.file_system.compare_files import compare_files
-from ixmachina.tools.file_system.empty_dir import empty_dir
-from ixmachina.tools.file_system.path_utils import path_exists
-from ..constants import FILE_SYSTEM_TEST_DIR
+from ixmachina.tools.file_system import change_file_path
+from ixmachina.tools.file_system import compare_files
+from ixmachina.tools.file_system import empty_dir
+from ixmachina.tools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
 def test_change_file_path_renames_file():
@@ -39,7 +39,7 @@ def test_change_file_path_renames_file():
     assert path_exists(dest_file)  # Destination should exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_file_path_moves_to_different_directory():
@@ -74,7 +74,7 @@ def test_change_file_path_moves_to_different_directory():
     assert path_exists(dest_file)
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_file_path_destination_exists_fails():
@@ -98,7 +98,7 @@ def test_change_file_path_destination_exists_fails():
     assert path_exists(dest_file)  # Destination should still exist
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_file_path_source_not_exists_fails():
@@ -115,7 +115,7 @@ def test_change_file_path_source_not_exists_fails():
     assert "does not exist" in result["error"]
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_file_path_creates_parent_directory():
@@ -145,7 +145,7 @@ def test_change_file_path_creates_parent_directory():
     assert path_exists(dest_file)
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 
 
 def test_change_file_path_binary_content():
@@ -180,5 +180,5 @@ def test_change_file_path_binary_content():
         assert f.read() == binary_data
     
     # Clean up
-    empty_dir(dir_path=FILE_SYSTEM_TEST_DIR)
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
 

@@ -3,6 +3,7 @@ Tests for LLM usage tracking.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -14,7 +15,7 @@ def test_llm_captures_usage():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
 
     # Initial state - no usage yet
     assert llm.last_usage is None
@@ -46,7 +47,7 @@ def test_llm_accumulates_usage():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
 
     # Make first query
     first_response = llm.query(user_prompt="Say hello")

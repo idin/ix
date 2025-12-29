@@ -3,6 +3,7 @@ Tests for extract_from_page tool.
 """
 
 import pytest
+from tests.conftest import DEFAULT_TEST_MODEL
 import os
 
 from ixmachina.llm import LLM
@@ -15,7 +16,7 @@ def test_extract_from_page_success():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Use a simple, stable page for testing (httpbin.org)
     result = extract_from_page(
@@ -40,7 +41,7 @@ def test_extract_from_page_fetch_error():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Use an invalid URL
     result = extract_from_page(
@@ -62,7 +63,7 @@ def test_extract_from_page_extracts_specific_info():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     # Create a simple HTML page with price information
     # We'll use httpbin.org/html which returns a simple HTML page
@@ -86,7 +87,7 @@ def test_extract_from_page_with_special_characters_in_query():
     if not api_key:
         pytest.fail("OPENAI_API_KEY environment variable not set")
 
-    llm = LLM(api_key=api_key, model_name="gpt-4")
+    llm = LLM(api_key=api_key, model_name=DEFAULT_TEST_MODEL)
     
     result = extract_from_page(
         url="https://httpbin.org/html",
