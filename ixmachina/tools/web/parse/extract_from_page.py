@@ -4,10 +4,10 @@ Tools for extracting specific information from web pages using LLM.
 
 from typing import Dict, Optional, Any, List, Union
 
-from .fetch_url import fetch_url
+from ..fetch.fetch_url import fetch_url
 from .parse_html import extract_text
-from .constants import BROWSER_USER_AGENT
-from ..string.smart_truncate import smart_truncate_text
+from ..utils.constants import BROWSER_USER_AGENT
+from ...string.smart_truncate import smart_truncate_text
 
 
 def extract_from_page(

@@ -5,9 +5,11 @@ Web fetching tools for HTTP requests.
 from typing import Dict, Optional, Any
 import requests
 
-from .constants import BROWSER_USER_AGENT
+from ..utils.constants import BROWSER_USER_AGENT
+from ....utils.persist import persist
 
 
+@persist(expire_seconds=30 * 60)  # Cache for 30 minutes
 def fetch_url(
     url: str,
     headers: Optional[Dict[str, str]] = None,
@@ -55,6 +57,7 @@ def fetch_url(
         }
 
 
+@persist(expire_seconds=15 * 60)  # Cache for 15 minutes
 def fetch_json(
     url: str,
     headers: Optional[Dict[str, str]] = None,

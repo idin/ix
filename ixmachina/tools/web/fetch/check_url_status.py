@@ -12,9 +12,11 @@ from requests.exceptions import (
     HTTPError,
 )
 
-from .constants import BROWSER_USER_AGENT
+from ..utils.constants import BROWSER_USER_AGENT
+from ....utils.persist import persist
 
 
+@persist(expire_seconds=60 * 60)  # Cache for 1 hour
 def check_url_status(
     url: str,
     headers: Optional[Dict[str, str]] = None,
