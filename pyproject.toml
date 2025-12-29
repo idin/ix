@@ -20,11 +20,14 @@ dependencies = [
     "beautifulsoup4>=4.11.0",
     "ddgs>=1.0.0",
     "rapidfuzz>=3.0.0",
+    "mutagen>=1.47.0",
+    "Pillow>=10.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
+    "pandas>=2.0.0",
 ]
 embeddings = [
     "sentence-transformers>=2.0.0",
