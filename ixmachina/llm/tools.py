@@ -32,8 +32,5 @@ def prepare_tools_for_provider(
         }
     else:
         # Future: add other providers
-        return {
-            "tools": [],
-            "schemas": {},
-        }
+        raise NotImplementedError(f"Provider {provider} not supported")
 
