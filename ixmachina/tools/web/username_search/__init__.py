@@ -8,11 +8,17 @@ from .discover_username_signature import (
     generate_non_existing_username,
     KNOWN_EXISTING_USERNAMES,
 )
+from .check_username_availability import (
+    check_username_availability,
+    check_single_username_exists,
+)
 
 __all__ = [
     "discover_username_url_pattern",
     "discover_username_signature",
     "generate_non_existing_username",
     "KNOWN_EXISTING_USERNAMES",
+    "check_username_availability",
+    "check_single_username_exists",
 ]
 

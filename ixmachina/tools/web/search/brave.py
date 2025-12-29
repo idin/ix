@@ -5,17 +5,15 @@ Reference: https://api-dashboard.search.brave.com/app/documentation/web-search/g
 """
 
 from typing import Dict, List, Optional, Any
-from urllib.parse import urlparse
 import os
 import requests
 from ....utils.persist import persist
 
 
-@persist(path=".cache/ix/brave_search", expire_seconds=86400)
+@persist(expire_seconds=86400)
 def search_brave(
     query: str,
     max_results: Optional[int] = 20,
-    domain_filter: Optional[List[str]] = None,
     api_key: Optional[str] = None,
     safesearch: Optional[str] = None,
     freshness: Optional[str] = None,
@@ -32,7 +30,6 @@ def search_brave(
                     Brave API charges per request, not per result, so 10 and 20 results cost the same.
                     For more than 20 results, the function will make multiple paginated requests
                     (up to 200 results total, each page is a separate charge).
-        domain_filter: Optional list of domain filters to restrict results to specific domains.
         api_key: Brave API key. If not provided, will try to get from BRAVE_API_KEY environment variable.
         safesearch: Optional safe search setting. Options: "off", "moderate", "strict". Default: "moderate".
         freshness: Optional freshness filter. Options: "pd" (past day), "pw" (past week), "pm" (past month), "py" (past year).
@@ -166,23 +163,8 @@ def search_brave(
             if len(all_results) >= max_results:
                 break
         
-        # Apply domain filter if provided
-        if domain_filter:
-            filtered_results = []
-            for result in all_results:
-                url = result.get("url", "")
-                if not url:
-                    continue
-                parsed_url = urlparse(url)
-                domain = parsed_url.netloc.lower()
-                if any(filter_domain.lower() in domain for filter_domain in domain_filter):
-                    filtered_results.append(result)
-                    if len(filtered_results) >= max_results:
-                        break
-            results = filtered_results
-        else:
-            # Limit to requested number of results
-            results = all_results[:max_results]
+        # Limit to requested number of results
+        results = all_results[:max_results]
         
         # 0 results is NOT success
         if len(results) == 0:

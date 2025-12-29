@@ -9,11 +9,14 @@ domain-specific behavior (e.g., no "if domain == 'pypi.org'" checks).
 import random
 import string
 import time
+import os
 from typing import Dict, Optional, Any, List, Union
 from collections import Counter
-from ..check_url_status import check_url_status
-from ..fetch_url import fetch_url
-from ..extract_domain import extract_domain
+from ..fetch.check_url_status import check_url_status
+from ..fetch.fetch_url import fetch_url
+from ..utils.extract_domain import extract_domain
+from ....utils.persist import persist
+from .discover_username_url_pattern import discover_username_url_pattern
 
 
 # Known existing usernames for popular domains
@@ -86,9 +89,10 @@ def _discover_username_signature_using_url_pattern(
             - error: Error message if discovery failed (None if successful)
     """
     # Extract domain from URL pattern
-    domain_lower = extract_domain(url=url_pattern, remove_www=True)
+    domain_lower = extract_domain(url=url_pattern)
     
-    if domain_lower is None:
+    # Validate that extracted domain is actually a valid domain (has at least one dot)
+    if domain_lower is None or "." not in domain_lower:
         return {
             "success": False,
             "domain": None,
@@ -223,12 +227,14 @@ def _discover_username_signature_using_url_pattern(
     }
 
 
+@persist(expire_seconds=14 * 24 * 60 * 60)  # Cache for 14 days
 def discover_username_signature(
     domain: Optional[str] = None,
     url_pattern: Optional[str] = None,
     existing_username: Optional[Union[str, List[str]]] = None,
     non_existing_username: Optional[str] = None,
     timeout: Optional[int] = 10,
+    brave_api_key: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Discover the signature for existing and non-existing usernames.
@@ -305,6 +311,7 @@ def discover_username_signature(
             domain=domain,
             existing_username=pattern_username,
             timeout=timeout,
+            brave_api_key=brave_api_key,
         )
         
         if not pattern_result.get("success"):

@@ -3,17 +3,17 @@ Web search tools for searching the internet.
 """
 
 from typing import Dict, List, Optional, Any, Union
-from urllib.parse import urlparse
 
-from .duckduckgo import search_duckduckgo
 from .brave import search_brave
+from ..utils.filter_by_domain import filter_by_domain
 
 
 def search_web(
     query: str,
     max_results: Optional[int] = 10,
     search_engine: str = "brave",
-    domain_filter: Optional[Union[str, List[str]]] = None,
+    domain_whitelist: Optional[Union[str, List[str]]] = None,
+    domain_blacklist: Optional[Union[str, List[str]]] = None,
     brave_api_key: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
@@ -22,10 +22,13 @@ def search_web(
     Args:
         query: The search query string.
         max_results: Maximum number of results to return. Default: 10.
-        search_engine: Search engine to use. Options: "brave" (default), "duckduckgo".
-        domain_filter: Optional domain filter(s) to restrict results to specific domains.
-                      Can be a string (single domain) or list of strings (multiple domains).
-                      Example: "openai.com" or ["openai.com", "anthropic.com"].
+        search_engine: Search engine to use. Options: "brave" (default).
+        domain_whitelist: Optional domain(s) to include. Can be a string (single domain) or
+                        list of strings (multiple domains). Only URLs from these domains will be returned.
+                        Example: "openai.com" or ["openai.com", "anthropic.com"].
+        domain_blacklist: Optional domain(s) to exclude. Can be a string (single domain) or
+                         list of strings (multiple domains). URLs from these domains will be excluded.
+                         Example: "spam.com" or ["spam.com", "ads.com"].
         brave_api_key: Optional Brave API key. Only used when search_engine="brave".
                       If not provided, will try to get from BRAVE_API_KEY environment variable.
 
@@ -41,17 +44,43 @@ def search_web(
             - search_engine: The search engine used
             - error: Error message if search failed (None if successful)
     """
-    # Normalize domain_filter to a list
-    if domain_filter is not None:
-        if isinstance(domain_filter, str):
-            domain_filter = [domain_filter]
-    
     search_engine_lower = search_engine.lower()
     
     if search_engine_lower == "brave":
-        return search_brave(query=query, max_results=max_results, domain_filter=domain_filter, api_key=brave_api_key)
-    elif search_engine_lower == "duckduckgo":
-        return search_duckduckgo(query=query, max_results=max_results, domain_filter=domain_filter)
+        search_result = search_brave(query=query, max_results=max_results, api_key=brave_api_key)
+        
+        # Apply domain filtering if provided
+        if search_result.get("success"):
+            # Extract URLs from results
+            urls = [result.get("url", "") for result in search_result.get("results", [])]
+            
+            # Apply blacklist first (if provided)
+            if domain_blacklist is not None:
+                urls = filter_by_domain(urls=urls, domains=domain_blacklist, filter_type="exclude")
+            
+            # Apply whitelist (if provided)
+            if domain_whitelist is not None:
+                urls = filter_by_domain(urls=urls, domains=domain_whitelist, filter_type="include")
+            
+            # Filter results to only include URLs that passed the filters
+            filtered_results = [
+                result for result in search_result.get("results", [])
+                if result.get("url", "") in urls
+            ]
+            
+            # Limit to max_results
+            filtered_results = filtered_results[:max_results]
+            
+            # Update search result with filtered results
+            search_result["results"] = filtered_results
+            search_result["count"] = len(filtered_results)
+            
+            # If filtering resulted in 0 results, mark as unsuccessful
+            if len(filtered_results) == 0:
+                search_result["success"] = False
+                search_result["error"] = "No results found after domain filtering."
+        
+        return search_result
     else:
         return {
             "success": False,
@@ -59,7 +88,7 @@ def search_web(
             "count": 0,
             "query": query,
             "search_engine": search_engine,
-            "error": f"Unknown search engine: {search_engine}. Supported: brave, duckduckgo",
+            "error": f"Unknown search engine: {search_engine}. Supported: brave",
         }
 
 
@@ -72,7 +101,7 @@ def search_web_simple(
 
     Args:
         query: The search query string.
-        search_engine: Search engine to use. Options: "brave" (default), "duckduckgo".
+        search_engine: Search engine to use. Options: "brave" (default).
 
     Returns:
         List of search results, each containing:
@@ -90,7 +119,6 @@ def search_web_simple(
 __all__ = [
     "search_web",
     "search_web_simple",
-    "search_duckduckgo",
     "search_brave",
 ]
 

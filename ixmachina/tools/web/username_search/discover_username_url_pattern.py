@@ -9,15 +9,15 @@ domain-specific behavior (e.g., no "if domain == 'pypi.org'" checks).
 import re
 from typing import Dict, Optional, Any, List, Union
 from urllib.parse import urlparse, urlunparse
-from ..check_url_status import check_url_status
+from ..fetch.check_url_status import check_url_status
 from ..search import search_web
-from ..fetch_url import fetch_url
+from ..fetch.fetch_url import fetch_url
 from ....utils.persist import persist
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 
-@persist(path=".cache/ix/discover_username_url_pattern", expire_seconds=30 * 24 * 60 * 60)
+@persist(expire_seconds=30 * 24 * 60 * 60)
 def discover_username_url_pattern(
     domain: str,
     existing_username: Union[str, List[str]],
