@@ -4,8 +4,8 @@ Tools for fetching model pricing information from company websites.
 
 from typing import Dict, Any, Optional, List
 
-from ..web.search_web import search_web
-from ..web.extract_from_page import extract_from_page
+from ..web.search import search_web
+from ..web.parse import extract_from_page
 from ..string.infer_type import infer_string_type
 
 
@@ -13,6 +13,7 @@ def get_model_prices(
     company: str,
     llm: Any,
     max_search_results: int = 5,
+    brave_api_key: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Get model pricing information from a company's website.
@@ -50,8 +51,9 @@ def get_model_prices(
         search_result = search_web(
             query=search_query,
             max_results=max_search_results * 2,  # Get more results to filter
-            search_engine="duckduckgo",
+            search_engine="brave",
             domain_filter=domain_filter,
+            brave_api_key=brave_api_key,
         )
         
         if not search_result["success"] or search_result["count"] == 0:
