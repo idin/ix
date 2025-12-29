@@ -6,8 +6,8 @@ from typing import Dict, Any, List, Tuple
 from collections import deque
 import os
 
-from .path_utils import path_exists, path_is_dir
-from .list_dir_contents import list_dir_contents
+from ..path_utils import path_exists, path_is_dir
+from ..list.list_dir_contents import list_dir_contents
 from .compare_files import compare_files
 
 
@@ -142,8 +142,8 @@ def _compare_dirs_iterative(
         dir_path_1, dir_path_2, relative_path = dir_queue.popleft()
 
         # List contents of both directories
-        list_result_1 = list_dir_contents(directory_path=dir_path_1, include_hidden=True)
-        list_result_2 = list_dir_contents(directory_path=dir_path_2, include_hidden=True)
+        list_result_1 = list_dir_contents(path=dir_path_1, include_hidden=True)
+        list_result_2 = list_dir_contents(path=dir_path_2, include_hidden=True)
 
         if not list_result_1["success"] or not list_result_2["success"]:
             # Record directory listing errors in differences

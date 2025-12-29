@@ -5,11 +5,11 @@ File system tools for listing directory contents.
 from typing import Dict, Any, List, Optional
 import os
 
-from .path_utils import path_exists, path_is_dir
+from ..path_utils import path_exists, path_is_dir
 
 
 def list_dir(
-    directory_path: str,
+    path: str,
     include_hidden: bool = False,
 ) -> Dict[str, Any]:
     """
@@ -30,27 +30,27 @@ def list_dir(
             - error: Error message if operation failed (None if successful).
     """
     try:
-        if not path_exists(directory_path):
+        if not path_exists(path):
             return {
                 "success": False,
                 "items": [],
-                "error": f"Directory does not exist: {directory_path}",
+                "error": f"Directory does not exist: {path}",
             }
 
-        if not path_is_dir(directory_path):
+        if not path_is_dir(path):
             return {
                 "success": False,
                 "items": [],
-                "error": f"Path is not a directory: {directory_path}",
+                "error": f"Path is not a directory: {path}",
             }
 
         items = []
-        for item_name in os.listdir(directory_path):
+        for item_name in os.listdir(path):
             # Skip hidden files if include_hidden is False
             if not include_hidden and item_name.startswith("."):
                 continue
 
-            item_path = os.path.join(directory_path, item_name)
+            item_path = os.path.join(path, item_name)
             item_type = "directory" if path_is_dir(item_path) else "file"
 
             items.append({

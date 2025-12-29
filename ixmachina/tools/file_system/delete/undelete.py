@@ -6,7 +6,7 @@ from typing import Dict, Any, Optional, TYPE_CHECKING
 import os
 import shutil
 
-from .path_utils import path_exists
+from ..path_utils import path_exists
 from .recycle_bin import (
     load_metadata,
     find_in_recycle_bin_index,
@@ -14,7 +14,7 @@ from .recycle_bin import (
 )
 
 if TYPE_CHECKING:
-    from .memory import FileSystemMemory
+    from ..memory import FileSystemMemory
 
 
 def undelete(
@@ -105,7 +105,7 @@ def undelete(
         # Track action in memory if provided (only after operation succeeds)
         if file_system_memory is not None:
             try:
-                from .memory import Action
+                from ..memory import Action
                 from .delete_file import delete_file
                 from .delete_dir import delete_dir
 

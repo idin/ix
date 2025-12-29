@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from .path_utils import path_exists
+from ..path_utils import path_exists
 
 
 def get_recycle_bin_path() -> str:

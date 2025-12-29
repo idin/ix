@@ -5,17 +5,17 @@ File system tools for emptying directories.
 from typing import Dict, Any, Optional, TYPE_CHECKING
 import os
 
-from .path_utils import path_exists, path_is_dir
-from .list_dir_contents import list_dir_contents
+from ..path_utils import path_exists, path_is_dir
+from ..list.list_dir_contents import list_dir_contents
 from .delete_file import delete_file
 from .delete_dir import delete_dir
 
 if TYPE_CHECKING:
-    from .memory import FileSystemMemory
+    from ..memory import FileSystemMemory
 
 
 def empty_dir(
-    dir_path: str,
+    path: str,
     file_system_memory: Optional["FileSystemMemory"] = None,
 ) -> Dict[str, Any]:
     """
@@ -25,7 +25,7 @@ def empty_dir(
     recycle bin. The directory itself remains empty after this operation.
 
     Args:
-        dir_path: Path to the directory to empty.
+        path: Path to the directory to empty.
         file_system_memory: Optional FileSystemMemory instance to track actions.
             Default: None.
 
@@ -37,28 +37,28 @@ def empty_dir(
             - error: Error message if operation failed (None if successful).
     """
     try:
-        if not path_exists(dir_path):
+        if not path_exists(path):
             return {
                 "success": False,
-                "dir_path": dir_path,
+                "dir_path": path,
                 "deleted_items": [],
-                "error": f"Directory does not exist: {dir_path}",
+                "error": f"Directory does not exist: {path}",
             }
 
-        if not path_is_dir(dir_path):
+        if not path_is_dir(path):
             return {
                 "success": False,
-                "dir_path": dir_path,
+                "dir_path": path,
                 "deleted_items": [],
-                "error": f"Path is not a directory: {dir_path}",
+                "error": f"Path is not a directory: {path}",
             }
 
         # Get all items to delete using list_dir_contents (separates files and directories)
-        list_result = list_dir_contents(directory_path=dir_path, include_hidden=True)
+        list_result = list_dir_contents(path=path, include_hidden=True)
         if not list_result["success"]:
             return {
                 "success": False,
-                "dir_path": dir_path,
+                "dir_path": path,
                 "deleted_items": [],
                 "error": f"Error listing directory: {list_result['error']}",
             }
@@ -69,7 +69,7 @@ def empty_dir(
         # Delete files first
         for file_item in list_result["files"]:
             file_path = file_item["path"]
-            result = delete_file(file_path=file_path, file_system_memory=file_system_memory)
+            result = delete_file(path=file_path, file_system_memory=file_system_memory)
             if result["success"]:
                 deleted_items.append(file_path)
             else:
@@ -78,7 +78,7 @@ def empty_dir(
         # Delete directories
         for dir_item in list_result["directories"]:
             dir_path_item = dir_item["path"]
-            result = delete_dir(dir_path=dir_path_item, file_system_memory=file_system_memory)
+            result = delete_dir(path=dir_path_item, file_system_memory=file_system_memory)
             if result["success"]:
                 deleted_items.append(dir_path_item)
             else:
@@ -87,28 +87,28 @@ def empty_dir(
         if errors:
             return {
                 "success": False,
-                "dir_path": dir_path,
+                "dir_path": path,
                 "deleted_items": deleted_items,
                 "error": f"Some items could not be deleted: {'; '.join(errors)}",
             }
 
         return {
             "success": True,
-            "dir_path": dir_path,
+            "dir_path": path,
             "deleted_items": deleted_items,
             "error": None,
         }
     except PermissionError as e:
         return {
             "success": False,
-            "dir_path": dir_path,
+            "dir_path": path,
             "deleted_items": [],
             "error": f"Permission denied: {str(e)}",
         }
     except Exception as e:
         return {
             "success": False,
-            "dir_path": dir_path,
+            "dir_path": path,
             "deleted_items": [],
             "error": f"Error emptying directory: {str(e)}",
         }

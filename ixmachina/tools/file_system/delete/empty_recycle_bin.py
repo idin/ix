@@ -6,8 +6,8 @@ from typing import Dict, Any
 import os
 import shutil
 
-from .path_utils import path_exists
-from .list_dir_contents import list_dir_contents
+from ..path_utils import path_exists
+from ..list.list_dir_contents import list_dir_contents
 from .recycle_bin import get_recycle_bin_path, get_recycle_bin_index_path
 
 
@@ -39,7 +39,7 @@ def empty_recycle_bin() -> Dict[str, Any]:
         errors = []
 
         # Get all items in recycle bin using list_dir_contents (separates files and directories)
-        list_result = list_dir_contents(directory_path=recycle_bin, include_hidden=True)
+        list_result = list_dir_contents(path=recycle_bin, include_hidden=True)
         if not list_result["success"]:
             return {
                 "success": False,

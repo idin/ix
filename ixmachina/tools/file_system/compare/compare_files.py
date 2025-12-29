@@ -6,7 +6,7 @@ from typing import Dict, Any
 import os
 import filecmp
 
-from .path_utils import path_exists, path_is_file
+from ..path_utils import path_exists, path_is_file
 
 
 def compare_files(

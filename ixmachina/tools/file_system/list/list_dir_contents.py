@@ -9,14 +9,14 @@ from .list_dir import list_dir
 
 
 def list_dir_contents(
-    directory_path: str,
+    path: str,
     include_hidden: bool = False,
 ) -> Dict[str, Any]:
     """
     List the contents of a directory, separated into files and directories.
 
     Args:
-        directory_path: Path to the directory to list.
+        path: Path to the directory to list.
         include_hidden: If True, include hidden files and directories (starting with '.').
             Default: False.
 
@@ -32,7 +32,7 @@ def list_dir_contents(
             - error: Error message if operation failed (None if successful).
     """
     # Use list_dir to get all items
-    result = list_dir(directory_path=directory_path, include_hidden=include_hidden)
+    result = list_dir(path=path, include_hidden=include_hidden)
     
     if not result["success"]:
         return {
