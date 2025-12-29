@@ -13,12 +13,18 @@ from ..utils.fuzzy_match import fuzzy_match
 from .base_agent import BaseAgent
 from .save_objects import (
     ObjectToSave,
-    ObjectsToSave,
+    MultipleObjectsToSave,
     save_as,
     save_objects_if_they_need_to_be_saved,
 )
 from .verbose import (
     print_tool_result,
+)
+from .return_modes import (
+    CHAT_RESPONSE_MODES,
+    TOOL_OUTPUT_VALUE_MODES,
+    TOOL_FULL_OUTPUT_MODES,
+    ALL_VALID_MODES,
 )
 
 
@@ -54,6 +60,7 @@ class Agent(BaseAgent):
         conversation_object_prefix: str = "conv_obj:",
         tool_call_object_prefix: str = "tool_obj:",
         verbose: bool = True,
+        default_return_mode: Optional[str] = None
     ) -> None:
         """
         Initialize an Agent.
@@ -108,6 +115,7 @@ class Agent(BaseAgent):
         self.global_object_prefix = global_object_prefix.lower()
         self.conversation_object_prefix = conversation_object_prefix.lower()
         self.tool_call_object_prefix = tool_call_object_prefix.lower()
+        self.default_return_mode = default_return_mode.lower() if default_return_mode else None
         
         # Store multiple conversations by ID (replaces single conversation_history from BaseAgent)
         self.conversations: Dict[str, List[Dict[str, str]]] = {}
@@ -147,24 +155,70 @@ class Agent(BaseAgent):
         self.start_conversation()
     
 
-    @staticmethod
-    def save_as(*, name: Optional[str] = None, value: Optional[Any] = None, **kwargs: Any) -> Union[ObjectToSave, ObjectsToSave]:
+    def save_as(self, *, name: Optional[str] = None, obj: Optional[Any] = None, conversation_scoped: bool = False, conversation_id: Optional[str] = None, **kwargs: Any) -> Union[ObjectToSave, MultipleObjectsToSave]:
         """
         Save an object or multiple objects as saved objects that can be referenced later.
 
+        When called on an agent instance, actually saves the object(s) to the agent's storage.
         Can be called in two ways:
-        1. Single object: save_as(name="key", value=obj)
+        1. Single object: save_as(name="key", obj=obj)
         2. Multiple objects: save_as(key1=obj1, key2=obj2, ...)
 
         Args:
             name: Name to save the object under (for single save).
-            value: The object to save (for single save).
-            **kwargs: Named objects to save (for multiple save).
+            obj: The object to save (for single save).
+            conversation_scoped: If True, save as conversation-scoped object.
+                              If False, save as global object (default).
+            conversation_id: Conversation ID for conversation-scoped objects.
+                           Uses current conversation if not provided.
+            **kwargs: Named objects to save (for multiple save). conversation_scoped applies to all.
 
         Returns:
             ObjectToSave wrapper for single save, or ObjectsToSave for multiple save.
         """
-        return save_as(name=name, value=value, **kwargs)
+        result = save_as(name=name, obj=obj, conversation_scoped=conversation_scoped, **kwargs)
+        
+        # Actually save the object(s) to agent storage
+        if isinstance(result, ObjectToSave):
+            self._save_single_object(
+                name=result.name,
+                obj=result.object,
+                conversation_scoped=result.conversation_scoped,
+                conversation_id=conversation_id,
+            )
+        elif isinstance(result, MultipleObjectsToSave):
+            for object_to_save in result:
+                self._save_single_object(
+                    name=object_to_save.name,
+                    obj=object_to_save.object,
+                    conversation_scoped=object_to_save.conversation_scoped,
+                    conversation_id=conversation_id,
+                )
+        
+        return result
+    
+    def _save_single_object(self, name: str, obj: Any, conversation_scoped: bool = False, conversation_id: Optional[str] = None) -> None:
+        """
+        Save an object directly to the agent's storage.
+        
+        Internal method used by save_as() to actually perform the save.
+
+        Args:
+            name: Name to save the object under.
+            obj: The object to save.
+            conversation_scoped: If True, save as conversation-scoped object.
+                              If False, save as global object (default).
+            conversation_id: Conversation ID for conversation-scoped objects.
+                           Uses current conversation if not provided.
+        """
+        if conversation_scoped:
+            if conversation_id is None:
+                conversation_id = self.current_conversation_id
+            if conversation_id not in self._conversation_objects:
+                self._conversation_objects[conversation_id] = {}
+            self._conversation_objects[conversation_id][name] = obj
+        else:
+            self._global_objects[name] = obj
 
     def switch_default_llm(self, default_llm: Union[LLM, str]) -> None:
         """
@@ -195,7 +249,7 @@ class Agent(BaseAgent):
             Returns:
                 ObjectToSave wrapper that will be processed by the agent.
             """
-            return save_as(name=name, value=value, conversation_scoped=not global_memory)
+            return save_as(name=name, obj=value, conversation_scoped=not global_memory)
         
         def load(name: str, global_memory: bool = False) -> any:
             """
@@ -617,6 +671,8 @@ class Agent(BaseAgent):
             func = self.tool_functions[tool_name]
             # Resolve special object references
             arguments = self._add_system_objects_to_tool_arguments(arguments)
+            # Automatically inject file_system_memory if the tool accepts it and it's not provided
+            arguments = self._inject_file_system_memory(func, arguments)
             result = func(**arguments)
             # Save objects if they need to be saved
             result = self._save_objects_if_they_need_to_be_saved(
@@ -629,6 +685,30 @@ class Agent(BaseAgent):
             raise
         except Exception as e:
             return f"Error executing tool: {str(e)}"
+
+    def _inject_file_system_memory(self, func: Callable, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Automatically inject file_system_memory into tool arguments if the tool accepts it.
+        
+        Args:
+            func: The tool function.
+            arguments: Dictionary of tool arguments.
+        
+        Returns:
+            Dictionary with file_system_memory injected if needed.
+        """
+        import inspect
+        
+        # Get function signature
+        sig = inspect.signature(func)
+        
+        # Check if function has file_system_memory parameter
+        if 'file_system_memory' in sig.parameters:
+            # Only inject if not already provided or is None
+            if 'file_system_memory' not in arguments or arguments.get('file_system_memory') is None:
+                arguments['file_system_memory'] = self._file_system_memory
+        
+        return arguments
 
     def _save_objects_if_they_need_to_be_saved(
         self,
@@ -888,7 +968,7 @@ class Agent(BaseAgent):
         self,
         input_text: str,
         conversation_id: Optional[str] = None,
-        return_raw_tool_result: bool = False,
+        return_mode: Optional[str] = None,
         llm_instance: Union[str, LLM] = "default",
         max_iterations: int = 10,
     ) -> Any:
@@ -900,16 +980,32 @@ class Agent(BaseAgent):
         Args:
             input_text: The user's input message.
             conversation_id: Optional conversation ID. Uses default if not provided.
-            return_raw_tool_result: If True, return raw tool result(s) instead of the LLM's
-                interpretation. For single tool call, returns the result directly. For multiple
-                tool calls, returns a list of results. Default: False.
+            return_mode: What to return from the agent. Options:
+                - "chat_response" (default): Return the LLM's text response.
+                - "tool_output_value": Return the tool's output data only (removes "success" and "error" metadata).
+                - "tool_full_output": Return the full tool output including "success" and "error" metadata fields.
             llm_instance: LLM instance to use for this run. Can be:
                 - A string key to one of the LLMs in self.llms (default: "default")
                 - An LLM instance from self.llms
 
         Returns:
-            The agent's response text, or raw tool result(s) if return_raw_tool_result is True.
+            The agent's response based on return_mode:
+                - "chat_response": The LLM's text response (default).
+                - "tool_output_value": Tool output data only (without success/error metadata).
+                - "tool_full_output": Full tool output with success/error metadata.
         """
+
+        return_mode = return_mode or self.default_return_mode or "chat_response"
+
+        # Validate return_mode
+        if return_mode not in ALL_VALID_MODES:
+            raise ValueError(
+                f"Invalid return_mode: {return_mode}. "
+                "Must be one of: 'chat_response' (or 'response', 'chat'), "
+                "'tool_output_value' (or 'tool_value', 'output_value', 'value'), "
+                "'tool_full_output' (or 'tool_full', 'full_output', 'full')"
+            )
+        
         # Determine which LLM to use for this run
         run_llm, llm_key = self._get_llm_for_run(llm_instance=llm_instance)
         
@@ -930,7 +1026,7 @@ class Agent(BaseAgent):
         # Query LLM with full conversation history and tools
         # Tools are cached in __init__ to avoid repeated conversion
         iteration = 0
-        accumulated_tool_results = []  # Accumulate results across iterations when return_raw_tool_result=True
+        accumulated_tool_results = []  # Accumulate results across iterations for tool return modes
         
         while iteration < max_iterations:
             iteration += 1
@@ -987,11 +1083,21 @@ class Agent(BaseAgent):
                     )
                     tool_results.append(raw_result)
                 
-                # If return_raw_tool_result is True, accumulate results and continue
-                if return_raw_tool_result:
+                # If return_mode is a tool mode, accumulate results and continue
+                if return_mode in TOOL_OUTPUT_VALUE_MODES:
+                    # Extract output value from tool results (remove success/error metadata)
+                    extracted_results = [self._extract_tool_output_value(r) for r in tool_results]
+                    accumulated_tool_results.extend(extracted_results)
+                elif return_mode in TOOL_FULL_OUTPUT_MODES:
+                    # Keep full output with metadata
                     accumulated_tool_results.extend(tool_results)
-                    # Continue loop - may have more tool calls or final response
-                    continue
+                elif return_mode not in CHAT_RESPONSE_MODES:
+                    raise ValueError(
+                        f"Invalid return_mode: {return_mode}. "
+                        "Must be one of: 'chat_response' (or 'response', 'chat'), "
+                        "'tool_output_value' (or 'tool_value', 'output_value', 'value'), "
+                        "'tool_full_output' (or 'tool_full', 'full_output', 'full')"
+                    )
                 
                 # Continue the loop to get final response
                 continue
@@ -999,8 +1105,8 @@ class Agent(BaseAgent):
             # Regular text response - ensure it's a string
             if isinstance(response, str) and len(response) > 0:
                 conversation_history.append({"role": "assistant", "content": response})
-                # If return_raw_tool_result is True and we have accumulated results, return them
-                if return_raw_tool_result and accumulated_tool_results:
+                # If return_mode is a tool mode and we have accumulated results, return them
+                if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
                     if self.verbose:
                         print(f"[Agent] Returning {len(accumulated_tool_results)} accumulated tool result(s)")
                     if len(accumulated_tool_results) == 1:
@@ -1011,8 +1117,8 @@ class Agent(BaseAgent):
             elif isinstance(response, str):
                 # Empty string response - still add it and return
                 conversation_history.append({"role": "assistant", "content": response})
-                # If return_raw_tool_result is True and we have accumulated results, return them
-                if return_raw_tool_result and accumulated_tool_results:
+                # If return_mode is a tool mode and we have accumulated results, return them
+                if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
                     if len(accumulated_tool_results) == 1:
                         return accumulated_tool_results[0]
                     else:
@@ -1022,8 +1128,8 @@ class Agent(BaseAgent):
                 # Unexpected response type
                 response_str = str(response) if response else "Error: Empty response"
                 conversation_history.append({"role": "assistant", "content": response_str})
-                # If return_raw_tool_result is True and we have accumulated results, return them
-                if return_raw_tool_result and accumulated_tool_results:
+                # If return_mode is a tool mode and we have accumulated results, return them
+                if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
                     if len(accumulated_tool_results) == 1:
                         return accumulated_tool_results[0]
                     else:
@@ -1031,7 +1137,7 @@ class Agent(BaseAgent):
                 return response_str
         
         # If we've exceeded max iterations, return accumulated tool results or error
-        if return_raw_tool_result and accumulated_tool_results:
+        if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
             if len(accumulated_tool_results) == 1:
                 return accumulated_tool_results[0]
             else:

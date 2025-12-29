@@ -14,6 +14,12 @@ from .verbose import (
     print_tool_calls,
     print_tool_result,
 )
+from .return_modes import (
+    CHAT_RESPONSE_MODES,
+    TOOL_OUTPUT_VALUE_MODES,
+    TOOL_FULL_OUTPUT_MODES,
+    ALL_VALID_MODES,
+)
 
 
 class BaseAgent:
@@ -32,6 +38,7 @@ class BaseAgent:
         system_prompt: Optional[str] = None,
         tools: Optional[List[Callable]] = None,
         verbose: bool = True,
+        default_return_mode: Optional[str] = None,
     ) -> None:
         """
         Initialize a BaseAgent.
@@ -46,11 +53,13 @@ class BaseAgent:
             system_prompt: Optional system prompt for instructions.
             tools: Optional list of callable functions to use as tools.
             verbose: If True, print detailed information about agent's thinking process.
+            default_return_mode: Default return mode to use if not specified in run().
         """
         # Handle LLM initialization
         self._initialize_llms(llm=llm, default_llm=default_llm)
         self.system_prompt = system_prompt
         self.verbose = verbose
+        self.default_return_mode = default_return_mode.lower() if default_return_mode else None
         # Usage tracker
         self.usage_tracker = UsageTracker(include_conversation_id=False)
         
@@ -309,10 +318,33 @@ class BaseAgent:
         except Exception as e:
             return f"Error executing tool: {str(e)}"
 
+    def _extract_tool_output_value(self, tool_result: Any) -> Any:
+        """
+        Extract the output value from a tool result, removing metadata.
+        
+        If the tool result is a dictionary with "success" and "error" fields,
+        returns a copy without those metadata fields. Otherwise returns the result as-is.
+        
+        Args:
+            tool_result: The raw tool result with metadata.
+        
+        Returns:
+            The extracted output value without metadata.
+        """
+        if isinstance(tool_result, dict) and "success" in tool_result:
+            # Extract all fields except success and error
+            output = {k: v for k, v in tool_result.items() if k not in ("success", "error")}
+            # If only one field remains, return that value directly
+            if len(output) == 1:
+                return next(iter(output.values()))
+            # Otherwise return the dict without success/error
+            return output
+        return tool_result
+
     def run(
         self,
         input_text: str,
-        return_raw_tool_result: bool = False,
+        return_mode: Optional[str] = None,
         llm_instance: Union[str, LLM] = "default",
         max_iterations: int = 10,
     ) -> Any:
@@ -324,16 +356,31 @@ class BaseAgent:
 
         Args:
             input_text: The user's input message.
-            return_raw_tool_result: If True, return raw tool result(s) instead of the LLM's
-                interpretation. For single tool call, returns the result directly. For multiple
-                tool calls, returns a list of results. Default: False.
+            return_mode: What to return from the agent. Options:
+                - "chat_response" (default): Return the LLM's text response.
+                - "tool_output_value": Return the tool's output data only (removes "success" and "error" metadata).
+                - "tool_full_output": Return the full tool output including "success" and "error" metadata fields.
             llm_instance: LLM instance to use for this run. Can be:
                 - A string key to one of the LLMs in self.llms (default: "default")
                 - An LLM instance from self.llms
 
         Returns:
-            The agent's response text, or raw tool result(s) if return_raw_tool_result is True.
+            The agent's response based on return_mode:
+                - "chat_response": The LLM's text response (default).
+                - "tool_output_value": Tool output data only (without success/error metadata).
+                - "tool_full_output": Full tool output with success/error metadata.
         """
+        return_mode = return_mode or self.default_return_mode or "chat_response"
+        
+        # Validate return_mode
+        if return_mode not in ALL_VALID_MODES:
+            raise ValueError(
+                f"Invalid return_mode: {return_mode}. "
+                "Must be one of: 'chat_response' (or 'response'), "
+                "'tool_output_value' (or 'tool_value', 'output_value', 'value'), "
+                "'tool_full_output' (or 'tool_full', 'full_output', 'full')"
+            )
+        
         # Determine which LLM to use for this run
         run_llm, llm_key = self._get_llm_for_run(llm_instance=llm_instance)
         
@@ -343,7 +390,7 @@ class BaseAgent:
         # Query LLM with full conversation history and tools
         # Tools are cached in __init__ to avoid repeated conversion
         iteration = 0
-        accumulated_tool_results = []  # Accumulate results across iterations when return_raw_tool_result=True
+        accumulated_tool_results = []  # Accumulate results across iterations for tool return modes
         
         while iteration < max_iterations:
             iteration += 1
@@ -393,11 +440,16 @@ class BaseAgent:
                     raw_result = self._process_tool_call(tool_call=tool_call)
                     tool_results.append(raw_result)
                 
-                # If return_raw_tool_result is True, accumulate results and continue
-                if return_raw_tool_result:
+                # If return_mode is a tool mode, accumulate results and continue
+                if return_mode in TOOL_OUTPUT_VALUE_MODES:
+                    # Extract output value from tool results (remove success/error metadata)
+                    extracted_results = [self._extract_tool_output_value(r) for r in tool_results]
+                    accumulated_tool_results.extend(extracted_results)
+                elif return_mode in TOOL_FULL_OUTPUT_MODES:
+                    # Keep full output with metadata
                     accumulated_tool_results.extend(tool_results)
-                    # Continue loop - may have more tool calls or final response
-                    continue
+                # Continue loop - may have more tool calls or final response
+                continue
                 
                 # Continue the loop to get final response
                 continue
@@ -405,8 +457,8 @@ class BaseAgent:
             # Regular text response - ensure it's a string
             if isinstance(response, str) and len(response) > 0:
                 self.conversation_history.append({"role": "assistant", "content": response})
-                # If return_raw_tool_result is True and we have accumulated results, return them
-                if return_raw_tool_result and accumulated_tool_results:
+                # If return_mode is a tool mode and we have accumulated results, return them
+                if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
                     if self.verbose:
                         print(f"[Agent] Returning {len(accumulated_tool_results)} accumulated tool result(s)")
                     if len(accumulated_tool_results) == 1:
@@ -417,8 +469,8 @@ class BaseAgent:
             elif isinstance(response, str):
                 # Empty string response - still add it and return
                 self.conversation_history.append({"role": "assistant", "content": response})
-                # If return_raw_tool_result is True and we have accumulated results, return them
-                if return_raw_tool_result and accumulated_tool_results:
+                # If return_mode is a tool mode and we have accumulated results, return them
+                if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
                     if len(accumulated_tool_results) == 1:
                         return accumulated_tool_results[0]
                     else:
@@ -428,8 +480,8 @@ class BaseAgent:
                 # Unexpected response type
                 response_str = str(response) if response else "Error: Empty response"
                 self.conversation_history.append({"role": "assistant", "content": response_str})
-                # If return_raw_tool_result is True and we have accumulated results, return them
-                if return_raw_tool_result and accumulated_tool_results:
+                # If return_mode is a tool mode and we have accumulated results, return them
+                if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
                     if len(accumulated_tool_results) == 1:
                         return accumulated_tool_results[0]
                     else:
@@ -437,7 +489,7 @@ class BaseAgent:
                 return response_str
         
         # If we've exceeded max iterations, return accumulated tool results or error
-        if return_raw_tool_result and accumulated_tool_results:
+        if return_mode not in CHAT_RESPONSE_MODES and accumulated_tool_results:
             if len(accumulated_tool_results) == 1:
                 return accumulated_tool_results[0]
             else:
