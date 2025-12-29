@@ -8,7 +8,7 @@ import shutil
 
 from ..path_utils import path_exists, path_is_dir
 from ..memory import Action
-from ..delete_dir import delete_dir
+from ..delete.delete_dir import delete_dir
 
 if TYPE_CHECKING:
     from ..memory import FileSystemMemory
@@ -93,7 +93,7 @@ def copy_dir_into(
                 undo_action = Action(
                     function_name="delete_dir",
                     function=delete_dir,
-                    arguments={"dir_path": final_destination},
+                    arguments={"path": final_destination},
                 )
 
                 action = Action(

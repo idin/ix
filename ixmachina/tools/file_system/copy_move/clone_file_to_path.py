@@ -8,7 +8,7 @@ import shutil
 
 from ..path_utils import path_exists, path_is_file
 from ..memory import Action
-from ..delete_file import delete_file
+from ..delete.delete_file import delete_file
 
 if TYPE_CHECKING:
     from ..memory import FileSystemMemory
@@ -77,7 +77,7 @@ def clone_file_to_path(
                 undo_action = Action(
                     function_name="delete_file",
                     function=delete_file,
-                    arguments={"file_path": destination_path},
+                    arguments={"path": destination_path},
                 )
 
                 action = Action(

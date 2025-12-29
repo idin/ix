@@ -37,6 +37,18 @@ class Action:
         self.function = function
         self.arguments = arguments
 
+    def __str__(self) -> str:
+        """
+        Return a string representation of the Action.
+        """
+        return f"Action(function_name={self.function_name}, function={self.function.__name__}, arguments={self.arguments})"
+
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the Action.
+        """
+        return self.__str__()
+
 
 class FileSystemMemory:
     """
@@ -56,6 +68,12 @@ class FileSystemMemory:
         Initialize an empty FileSystemMemory.
         """
         self._stack: List[Tuple[Action, Optional[Action]]] = []
+
+    def show_history(self) -> List[Tuple[Action, Optional[Action]]]:
+        """
+        Get the history of actions.
+        """
+        return "\n".join([str(action) for action in self._stack])
 
     def add_action(
         self,

@@ -11,13 +11,13 @@ from .path_utils import path_exists, path_is_file, path_is_dir
 
 
 def get_file_status(
-    file_path: str,
+    path: str,
 ) -> Dict[str, Any]:
     """
     Get status information about a file or directory.
 
     Args:
-        file_path: Path to the file or directory.
+        path: Path to the file or directory.
 
     Returns:
         Dictionary with:
@@ -33,7 +33,7 @@ def get_file_status(
             - error: Error message if operation failed (None if successful).
     """
     try:
-        if not path_exists(file_path):
+        if not path_exists(path):
             return {
                 "success": True,
                 "exists": False,
@@ -47,9 +47,9 @@ def get_file_status(
                 "error": None,
             }
 
-        stat_info = os.stat(file_path)
-        is_file = path_is_file(file_path)
-        is_directory = path_is_dir(file_path)
+        stat_info = os.stat(path)
+        is_file = path_is_file(path)
+        is_directory = path_is_dir(path)
 
         # Get times
         modified_time = datetime.fromtimestamp(stat_info.st_mtime).isoformat()

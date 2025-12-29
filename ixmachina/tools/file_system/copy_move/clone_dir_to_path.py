@@ -8,7 +8,7 @@ import shutil
 
 from ..path_utils import path_exists, path_is_dir
 from ..memory import Action
-from ..delete_dir import delete_dir
+from ..delete.delete_dir import delete_dir
 
 if TYPE_CHECKING:
     from ..memory import FileSystemMemory
@@ -77,7 +77,7 @@ def clone_dir_to_path(
                 undo_action = Action(
                     function_name="delete_dir",
                     function=delete_dir,
-                    arguments={"dir_path": destination_path},
+                    arguments={"path": destination_path},
                 )
 
                 action = Action(
