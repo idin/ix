@@ -8,7 +8,7 @@ from .normalize_keys import normalize_key, normalize_keys
 from .usage_tracker import UsageTracker
 from .fuzzy_match import fuzzy_match
 from .tool_context import ToolContext, bind, get_bound_objects
-from .persist import persist
+from .persist import persist, set_cache_path, get_cache_path
 
 __all__ = [
     "add_dictionaries",
@@ -21,5 +21,7 @@ __all__ = [
     "bind",
     "get_bound_objects",
     "persist",
+    "set_cache_path",
+    "get_cache_path",
 ]
 
