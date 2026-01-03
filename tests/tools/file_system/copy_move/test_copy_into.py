@@ -6,7 +6,7 @@ import pytest
 import os
 
 from ixmachina.tools.file_system import (
-    copy_into,
+    copy_item_into,
     compare_files,
     compare_dirs,
     empty_dir,
@@ -38,7 +38,7 @@ def test_copy_into_with_file():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = copy_into(source_path=source_file, destination_dir=dest_dir)
+    result = copy_item_into(source_path=source_file, destination_dir=dest_dir)
     
     assert result["success"] is True
     assert path_exists(source_file)  # Source should still exist
@@ -84,7 +84,7 @@ def test_copy_into_with_directory():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = copy_into(source_path=source_dir, destination_dir=dest_dir)
+    result = copy_item_into(source_path=source_dir, destination_dir=dest_dir)
     
     assert result["success"] is True
     assert path_exists(source_dir)  # Source should still exist

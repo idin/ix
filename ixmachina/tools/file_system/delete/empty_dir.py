@@ -7,8 +7,7 @@ import os
 
 from ..path_utils import path_exists, path_is_dir
 from ..list.list_dir_contents import list_dir_contents
-from .delete_file import delete_file
-from .delete_dir import delete_dir
+from .delete import delete
 
 if TYPE_CHECKING:
     from ..memory import FileSystemMemory
@@ -66,23 +65,20 @@ def empty_dir(
         deleted_items = []
         errors = []
 
-        # Delete files first
+        # Collect all paths to delete
+        paths_to_delete = []
         for file_item in list_result["files"]:
-            file_path = file_item["path"]
-            result = delete_file(path=file_path, file_system_memory=file_system_memory)
-            if result["success"]:
-                deleted_items.append(file_path)
-            else:
-                errors.append(f"{file_path}: {result['error']}")
-
-        # Delete directories
+            paths_to_delete.append(file_item["path"])
         for dir_item in list_result["directories"]:
-            dir_path_item = dir_item["path"]
-            result = delete_dir(path=dir_path_item, file_system_memory=file_system_memory)
-            if result["success"]:
-                deleted_items.append(dir_path_item)
-            else:
-                errors.append(f"{dir_path_item}: {result['error']}")
+            paths_to_delete.append(dir_item["path"])
+
+        # Delete all items using the unified delete function
+        if paths_to_delete:
+            delete_result = delete(paths=paths_to_delete, file_system_memory=file_system_memory)
+            deleted_items = delete_result["successful_paths"]
+            for failed_path in delete_result["failed_paths"]:
+                error_msg = delete_result["results"].get(failed_path, {}).get("error", "Unknown error")
+                errors.append(f"{failed_path}: {error_msg}")
 
         if errors:
             return {

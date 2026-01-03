@@ -3,6 +3,7 @@ OpenAI tool conversion utilities.
 """
 
 import inspect
+from functools import partial
 from typing import Callable, Dict, Any, List
 
 
@@ -11,12 +12,23 @@ def function_to_openai_tool(func: Callable) -> Dict[str, Any]:
     Convert a Python function to OpenAI tool format.
 
     Args:
-        func: The function to convert.
+        func: The function to convert (can be a functools.partial object).
 
     Returns:
         OpenAI tool format dictionary.
     """
-    sig = inspect.signature(func)
+    # Handle functools.partial objects - get signature from underlying function
+    if isinstance(func, partial):
+        # Get the underlying function
+        underlying_func = func.func
+        # Get signature from underlying function
+        sig = inspect.signature(underlying_func)
+        # Remove parameters that are already bound in the partial
+        bound_args = set(func.keywords.keys()) if func.keywords else set()
+        bound_args.update(func.args if func.args else [])
+    else:
+        sig = inspect.signature(func)
+        bound_args = set()
     doc = inspect.getdoc(func) or ""
     
     properties = {}
@@ -25,6 +37,16 @@ def function_to_openai_tool(func: Callable) -> Dict[str, Any]:
     for param_name, param in sig.parameters.items():
         if param_name == "self":
             continue
+        # Skip parameters that are already bound in partial
+        if isinstance(func, partial):
+            # Check if this parameter is bound by position
+            param_index = list(sig.parameters.keys()).index(param_name)
+            if param_index < len(func.args):
+                continue
+            # Check if this parameter is bound by keyword
+            if param_name in bound_args:
+                continue
+        
         param_type = "string"
         if param.annotation != inspect.Parameter.empty:
             if param.annotation == int:

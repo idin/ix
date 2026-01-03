@@ -5,7 +5,7 @@ Tests for clone_dir_to_path function.
 import pytest
 import os
 
-from ixmachina.tools.file_system import clone_dir_to_path
+from ixmachina.tools.file_system import clone_to_path
 from ixmachina.tools.file_system import compare_dirs
 from ixmachina.tools.file_system import empty_dir
 from ixmachina.tools.file_system import path_exists
@@ -37,10 +37,11 @@ def test_clone_dir_to_path_copies_directory():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = clone_dir_to_path(source_path=source_dir, destination_path=dest_dir)
+    result = clone_to_path(source_destination_pairs={"source_path": source_dir, "destination_path": dest_dir})
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][source_dir]
+    assert single_result["error"] is None
     assert path_exists(source_dir)  # Source should still exist
     assert path_exists(dest_dir)  # Destination should exist
     
@@ -63,10 +64,11 @@ def test_clone_dir_to_path_destination_exists_fails():
     os.makedirs(source_dir)
     os.makedirs(dest_dir)
     
-    result = clone_dir_to_path(source_path=source_dir, destination_path=dest_dir)
+    result = clone_to_path(source_destination_pairs={"source_path": source_dir, "destination_path": dest_dir})
     
     assert result["success"] is False
-    assert "Overwrite is not allowed" in result["error"]
+    single_result = result["results"][source_dir]
+    assert "Overwrite is not allowed" in single_result["error"]
     assert path_exists(source_dir)  # Source should still exist
     
     # Clean up
@@ -123,10 +125,11 @@ def test_clone_dir_to_path_nested_structure():
     with open(file3, "w") as f:
         f.write("content3")
     
-    result = clone_dir_to_path(source_path=source_dir, destination_path=dest_dir)
+    result = clone_to_path(source_destination_pairs={"source_path": source_dir, "destination_path": dest_dir})
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][source_dir]
+    assert single_result["error"] is None
     
     # Verify directories are identical
     compare_result = compare_dirs(dir_path_1=source_dir, dir_path_2=dest_dir)
@@ -145,10 +148,11 @@ def test_clone_dir_to_path_source_not_exists():
     source_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "nonexistent")
     dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest")
     
-    result = clone_dir_to_path(source_path=source_dir, destination_path=dest_dir)
+    result = clone_to_path(source_destination_pairs={"source_path": source_dir, "destination_path": dest_dir})
     
     assert result["success"] is False
-    assert "does not exist" in result["error"]
+    single_result = result["results"][source_dir]
+    assert "does not exist" in single_result["error"]
     
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)

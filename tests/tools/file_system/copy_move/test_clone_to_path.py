@@ -5,7 +5,7 @@ Tests for clone_to_path function (works with both files and directories).
 import pytest
 import os
 
-from ixmachina.tools.file_system import clone_to_path
+from ixmachina.tools.file_system import clone_item_to_path
 from ixmachina.tools.file_system import compare_files
 from ixmachina.tools.file_system import compare_dirs
 from ixmachina.tools.file_system import empty_dir
@@ -33,7 +33,7 @@ def test_clone_to_path_with_file():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = clone_to_path(source_path=source_file, destination_path=dest_file)
+    result = clone_item_to_path(source_path=source_file, destination_path=dest_file)
     
     assert result["success"] is True
     assert path_exists(source_file)  # Source should still exist
@@ -73,7 +73,7 @@ def test_clone_to_path_with_directory():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = clone_to_path(source_path=source_dir, destination_path=dest_dir)
+    result = clone_item_to_path(source_path=source_dir, destination_path=dest_dir)
     
     assert result["success"] is True
     assert path_exists(source_dir)  # Source should still exist

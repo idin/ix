@@ -5,6 +5,8 @@ Tests for persist decorator use_cache flag and delete method.
 import time
 from pathlib import Path
 from ixmachina.utils.persist import persist, set_cache_path, get_cache_path
+from ixmachina.tools.file_system.delete import delete
+from ixmachina.tools.file_system.path_utils import path_exists
 
 
 def test_use_cache_flag_disables_caching():
@@ -12,9 +14,8 @@ def test_use_cache_flag_disables_caching():
     cache_dir = Path(".cache/ix_test/use_cache")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -51,9 +52,8 @@ def test_use_cache_flag_disables_caching():
         assert call_count["count"] == 2  # Still 2, used cache
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -63,9 +63,8 @@ def test_use_cache_flag_does_not_affect_cache_key():
     cache_dir = Path(".cache/ix_test/use_cache_key")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -97,9 +96,8 @@ def test_use_cache_flag_does_not_affect_cache_key():
         assert call_count["count"] == 2  # Used cache, didn't increment
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -109,9 +107,8 @@ def test_delete_method_removes_cached_value():
     cache_dir = Path(".cache/ix_test/delete")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -151,9 +148,8 @@ def test_delete_method_removes_cached_value():
         assert call_count["count"] == 2  # Used cache
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -163,9 +159,8 @@ def test_delete_method_with_different_arguments():
     cache_dir = Path(".cache/ix_test/delete_specific")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -213,9 +208,8 @@ def test_delete_method_with_different_arguments():
         assert call_count["count"] == 3  # Still cached
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -225,9 +219,8 @@ def test_delete_method_with_kwargs():
     cache_dir = Path(".cache/ix_test/delete_kwargs")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -262,9 +255,8 @@ def test_delete_method_with_kwargs():
         assert call_count["count"] == 2
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -276,9 +268,8 @@ def test_delete_method_ignores_cache_params():
     
     # Clean up
     for cache in [cache_dir, override_cache]:
-        if cache.exists():
-            import shutil
-            shutil.rmtree(cache)
+        if path_exists(str(cache)):
+            delete(paths=str(cache))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -309,9 +300,8 @@ def test_delete_method_ignores_cache_params():
         
         # Clean up
         for cache in [cache_dir, override_cache]:
-            if cache.exists():
-                import shutil
-                shutil.rmtree(cache)
+            if path_exists(str(cache)):
+                delete(paths=str(cache))
     finally:
         set_cache_path(original_cache_path)
 
@@ -357,9 +347,8 @@ def test_cache_path_parameter_not_in_cache_key():
     
     # Clean up
     for cache in [cache_dir1, cache_dir2]:
-        if cache.exists():
-            import shutil
-            shutil.rmtree(cache)
+        if path_exists(str(cache)):
+            delete(paths=str(cache))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -392,9 +381,8 @@ def test_cache_path_parameter_not_in_cache_key():
         
         # Clean up
         for cache in [cache_dir1, cache_dir2]:
-            if cache.exists():
-                import shutil
-                shutil.rmtree(cache)
+            if path_exists(str(cache)):
+                delete(paths=str(cache))
     finally:
         set_cache_path(original_cache_path)
 
@@ -410,9 +398,8 @@ def test_persist_caching_with_real_web_functions():
     cache_dir = Path(".cache/ix_test/web_functions")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -507,9 +494,8 @@ def test_persist_caching_with_real_web_functions():
         assert result10["non_existing_signature"] == result9["non_existing_signature"]
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -520,9 +506,8 @@ def test_exists_method_checks_cached_value():
     cache_dir = Path(".cache/ix_test/exists")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -553,9 +538,8 @@ def test_exists_method_checks_cached_value():
         assert test_function.exists(6) is False
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -565,9 +549,8 @@ def test_exists_method_with_kwargs():
     cache_dir = Path(".cache/ix_test/exists_kwargs")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -598,9 +581,8 @@ def test_exists_method_with_kwargs():
         assert test_function.exists(5, y=30) is False
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -612,9 +594,8 @@ def test_exists_method_ignores_cache_params():
     
     # Clean up
     for cache in [cache_dir, override_cache]:
-        if cache.exists():
-            import shutil
-            shutil.rmtree(cache)
+        if path_exists(str(cache)):
+            delete(paths=str(cache))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -643,9 +624,8 @@ def test_exists_method_ignores_cache_params():
         
         # Clean up
         for cache in [cache_dir, override_cache]:
-            if cache.exists():
-                import shutil
-                shutil.rmtree(cache)
+            if path_exists(str(cache)):
+                delete(paths=str(cache))
     finally:
         set_cache_path(original_cache_path)
 
@@ -685,9 +665,8 @@ def test_exists_method_with_expiration():
     cache_dir = Path(".cache/ix_test/exists_expire")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -724,9 +703,8 @@ def test_exists_method_with_expiration():
         assert test_function.exists(5) is False
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -736,9 +714,8 @@ def test_exists_method_after_delete():
     cache_dir = Path(".cache/ix_test/exists_delete")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -769,9 +746,8 @@ def test_exists_method_after_delete():
         assert test_function.exists(5) is False
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)
 
@@ -781,9 +757,8 @@ def test_persist_expiration_before_and_after():
     cache_dir = Path(".cache/ix_test/expiration_test")
     
     # Clean up
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original
     original_cache_path = get_cache_path()
@@ -830,8 +805,7 @@ def test_persist_expiration_before_and_after():
         assert call_count["count"] == 2  # Still 2, used new cache
         
         # Clean up
-        if cache_dir.exists():
-            import shutil
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
     finally:
         set_cache_path(original_cache_path)

@@ -5,7 +5,7 @@ Tests for clone_file_to_path function.
 import pytest
 import os
 
-from ixmachina.tools.file_system import clone_file_to_path
+from ixmachina.tools.file_system import clone_to_path
 from ixmachina.tools.file_system import compare_files
 from ixmachina.tools.file_system import empty_dir
 from ixmachina.tools.file_system import path_exists
@@ -32,10 +32,11 @@ def test_clone_file_to_path_copies_file():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = clone_file_to_path(source_path=source_file, destination_path=dest_file)
+    result = clone_to_path(source_destination_pairs={"source_path": source_file, "destination_path": dest_file})
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][source_file]
+    assert single_result["error"] is None
     assert path_exists(source_file)  # Source should still exist
     assert path_exists(dest_file)  # Destination should exist
     
@@ -61,10 +62,11 @@ def test_clone_file_to_path_destination_exists_fails():
     with open(dest_file, "w") as f:
         f.write("dest content")
     
-    result = clone_file_to_path(source_path=source_file, destination_path=dest_file)
+    result = clone_to_path(source_destination_pairs={"source_path": source_file, "destination_path": dest_file})
     
     assert result["success"] is False
-    assert "Overwrite is not allowed" in result["error"]
+    single_result = result["results"][source_file]
+    assert "Overwrite is not allowed" in single_result["error"]
     assert path_exists(source_file)  # Source should still exist
     
     # Clean up
@@ -92,7 +94,7 @@ def test_clone_file_to_path_creates_parent_directory():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = clone_file_to_path(source_path=source_file, destination_path=dest_file)
+    result = clone_to_path(source_destination_pairs={"source_path": source_file, "destination_path": dest_file})
     
     assert result["success"] is True
     assert path_exists(dest_file)
@@ -122,10 +124,11 @@ def test_clone_file_to_path_binary_content():
     with open(source_file, "wb") as f:
         f.write(binary_data)
     
-    result = clone_file_to_path(source_path=source_file, destination_path=dest_file)
+    result = clone_to_path(source_destination_pairs={"source_path": source_file, "destination_path": dest_file})
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][source_file]
+    assert single_result["error"] is None
     
     # Verify files are identical
     compare_result = compare_files(file_path_1=source_file, file_path_2=dest_file)
@@ -144,10 +147,11 @@ def test_clone_file_to_path_source_not_exists():
     source_file = os.path.join(FILE_SYSTEM_TEST_DIR, "nonexistent.txt")
     dest_file = os.path.join(FILE_SYSTEM_TEST_DIR, "dest.txt")
     
-    result = clone_file_to_path(source_path=source_file, destination_path=dest_file)
+    result = clone_to_path(source_destination_pairs={"source_path": source_file, "destination_path": dest_file})
     
     assert result["success"] is False
-    assert "does not exist" in result["error"]
+    single_result = result["results"][source_file]
+    assert "does not exist" in single_result["error"]
     
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)

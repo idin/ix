@@ -7,12 +7,9 @@ import os
 
 from ixmachina.tools.file_system import (
     FileSystemMemory,
-    clone_dir_to_path,
-    clone_file_to_path,
-    copy_dir_into,
-    copy_file_into,
-    delete_dir,
-    delete_file,
+    clone_to_path,
+    copy_into,
+    delete,
     empty_dir,
     path_exists,
 )
@@ -45,12 +42,13 @@ def test_undo_clone_file_to_path():
     source_file = file1
     cloned_file = os.path.join(FILE_SYSTEM_TEST_DIR, "cloned.txt")
     memory = FileSystemMemory()
-    result = clone_file_to_path(
-        source_path=source_file,
-        destination_path=cloned_file,
+    result = clone_to_path(
+        source_destination_pairs={"source_path": source_file, "destination_path": cloned_file},
         file_system_memory=memory,
     )
     assert result["success"] is True
+    single_result = result["results"][source_file]
+    assert single_result["success"] is True
     assert path_exists(cloned_file)
     assert path_exists(file1)  # Source should still exist
     assert path_exists(file2)  # Other files should still exist
@@ -58,7 +56,7 @@ def test_undo_clone_file_to_path():
     # Undo the clone
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "clone_file_to_path"
+    assert undo_result["action_name"] == "clone_to_path"
     # Verify undo worked
     assert not path_exists(cloned_file)  # Cloned file should be gone
     assert path_exists(file1)  # Source should still exist
@@ -98,12 +96,13 @@ def test_undo_clone_dir_to_path():
     # Clone a directory
     cloned_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "cloned_dir")
     memory = FileSystemMemory()
-    result = clone_dir_to_path(
-        source_path=dir1,
-        destination_path=cloned_dir,
+    result = clone_to_path(
+        source_destination_pairs={"source_path": dir1, "destination_path": cloned_dir},
         file_system_memory=memory,
     )
     assert result["success"] is True
+    single_result = result["results"][dir1]
+    assert single_result["success"] is True
     assert path_exists(cloned_dir)
     assert path_exists(dir1)  # Source should still exist
     assert path_exists(dir2)  # Other dirs should still exist
@@ -111,7 +110,7 @@ def test_undo_clone_dir_to_path():
     # Undo the clone
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "clone_dir_to_path"
+    assert undo_result["action_name"] == "clone_to_path"
     # Verify undo worked
     assert not path_exists(cloned_dir)  # Cloned dir should be gone
     assert path_exists(dir1)  # Source should still exist
@@ -146,12 +145,14 @@ def test_undo_copy_file_into():
         f.write("file3 content")
     # Copy file into directory
     memory = FileSystemMemory()
-    result = copy_file_into(
-        source_path=file1,
+    result = copy_into(
+        source_paths=file1,
         destination_dir=dest_dir,
         file_system_memory=memory,
     )
     assert result["success"] is True
+    single_result = result["results"][file1]
+    assert single_result["success"] is True
     assert path_exists(os.path.join(dest_dir, "file1.txt"))
     assert path_exists(file1)  # Source should still exist
     assert path_exists(file2)  # Other files should still exist
@@ -159,7 +160,7 @@ def test_undo_copy_file_into():
     # Undo the copy
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "copy_file_into"
+    assert undo_result["action_name"] == "copy_into"
     # Verify undo worked
     assert not path_exists(os.path.join(dest_dir, "file1.txt"))  # Copy should be gone
     assert path_exists(file1)  # Source should still exist
@@ -198,12 +199,14 @@ def test_undo_copy_dir_into():
         f.write("dest content")
     # Copy directory into directory
     memory = FileSystemMemory()
-    result = copy_dir_into(
-        source_path=source_dir,
+    result = copy_into(
+        source_paths=source_dir,
         destination_dir=dest_dir,
         file_system_memory=memory,
     )
     assert result["success"] is True
+    single_result = result["results"][source_dir]
+    assert single_result["success"] is True
     assert path_exists(os.path.join(dest_dir, "source_dir"))
     assert path_exists(source_dir)  # Source should still exist
     assert path_exists(other_dir)  # Other dirs should still exist
@@ -211,11 +214,51 @@ def test_undo_copy_dir_into():
     # Undo the copy
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "copy_dir_into"
+    assert undo_result["action_name"] == "copy_into"
     # Verify undo worked
     assert not path_exists(os.path.join(dest_dir, "source_dir"))  # Copy should be gone
     assert path_exists(source_dir)  # Source should still exist
     assert path_exists(other_dir)  # Other dirs should still exist
     assert path_exists(os.path.join(dest_dir, "other_file.txt"))  # Other files should still exist
+    # Clean up
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
+
+
+def test_undo_copy_uses_delete():
+    """
+    Verify that undo for copy operations uses the delete function.
+    This ensures the undo mechanism correctly removes copied items.
+    """
+    os.makedirs(FILE_SYSTEM_TEST_DIR, exist_ok=True)
+    source_file = os.path.join(FILE_SYSTEM_TEST_DIR, "source.txt")
+    dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest_dir")
+    os.makedirs(dest_dir, exist_ok=True)
+    
+    with open(source_file, "w") as f:
+        f.write("test content")
+    
+    memory = FileSystemMemory()
+    result = copy_into(
+        source_paths=source_file,
+        destination_dir=dest_dir,
+        file_system_memory=memory,
+    )
+    assert result["success"] is True
+    copied_file = os.path.join(dest_dir, "source.txt")
+    assert path_exists(copied_file)
+    
+    # Verify the undo action is set up to use delete
+    assert memory.size() == 1
+    action, undo_action = memory.get_last_action()
+    assert undo_action is not None
+    assert undo_action.function_name == "delete"
+    assert undo_action.function == delete
+    
+    # Verify undo actually deletes the copied file
+    undo_result = memory.undo()
+    assert undo_result["success"] is True
+    assert not path_exists(copied_file)  # Copied file should be deleted
+    assert path_exists(source_file)  # Source should still exist
+    
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)

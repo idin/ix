@@ -5,7 +5,7 @@ Tests for copy_dir_into function.
 import pytest
 import os
 
-from ixmachina.tools.file_system import copy_dir_into
+from ixmachina.tools.file_system import copy_into
 from ixmachina.tools.file_system import compare_dirs
 from ixmachina.tools.file_system import empty_dir
 from ixmachina.tools.file_system import path_exists
@@ -40,10 +40,11 @@ def test_copy_dir_into_copies_directory():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = copy_dir_into(source_path=source_dir, destination_dir=dest_dir)
+    result = copy_into(source_paths=source_dir, destination_dir=dest_dir)
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][source_dir]
+    assert single_result["error"] is None
     assert path_exists(source_dir)  # Source should still exist
     assert path_exists(os.path.join(dest_dir, "source_dir"))  # Copy should exist
     
@@ -70,7 +71,7 @@ def test_copy_dir_into_destination_exists_fails():
     os.makedirs(source_dir)
     os.makedirs(existing_subdir)
     
-    result = copy_dir_into(source_path=source_dir, destination_dir=dest_dir)
+    result = copy_into(source_paths=source_dir, destination_dir=dest_dir)
     
     assert result["success"] is False
     assert "Overwrite is not allowed" in result["error"]
@@ -89,10 +90,11 @@ def test_copy_dir_into_source_not_exists():
     dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest_dir")
     os.makedirs(dest_dir, exist_ok=True)
     
-    result = copy_dir_into(source_path=source_dir, destination_dir=dest_dir)
+    result = copy_into(source_paths=source_dir, destination_dir=dest_dir)
     
     assert result["success"] is False
-    assert "does not exist" in result["error"]
+    single_result = result["results"][source_dir]
+    assert "does not exist" in single_result["error"]
     
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)

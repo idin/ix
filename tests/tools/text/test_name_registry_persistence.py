@@ -13,6 +13,8 @@ import tempfile
 import os
 
 from ixmachina.tools.text import NameRegistry
+from ixmachina.tools.file_system.delete import delete
+from ixmachina.tools.file_system.path_utils import path_exists
 
 
 def test_save_load_json_basic():
@@ -49,8 +51,8 @@ def test_save_load_json_basic():
         
     finally:
         # Clean up
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_save_load_json_with_aliases():
@@ -88,8 +90,8 @@ def test_save_load_json_with_aliases():
         assert "Jon" in aliases
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_save_load_json_with_usage_counts():
@@ -124,8 +126,8 @@ def test_save_load_json_with_usage_counts():
         assert len(loaded_registry) == 1
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_save_load_json_with_tokens():
@@ -164,8 +166,8 @@ def test_save_load_json_with_tokens():
         assert "John Doe" not in smith_names
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_save_load_pickle_basic():
@@ -201,8 +203,8 @@ def test_save_load_pickle_basic():
         assert loaded_registry.get_canonical("chris de burgh") == "Chris de Burgh"
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_save_load_pickle_with_aliases():
@@ -240,8 +242,8 @@ def test_save_load_pickle_with_aliases():
         assert "Jon" in aliases
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_json_is_human_readable():
@@ -281,8 +283,8 @@ def test_json_is_human_readable():
         assert '  ' in content  # Indentation
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 
 
 def test_save_json_error_handling():
@@ -365,6 +367,6 @@ def test_concatenated_form_preserved():
         assert loaded_registry.get_canonical("john_smith") == "John Smith"
         
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if path_exists(temp_path):
+            delete(paths=temp_path)
 

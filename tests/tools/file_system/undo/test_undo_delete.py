@@ -7,8 +7,7 @@ import os
 
 from ixmachina.tools.file_system import (
     FileSystemMemory,
-    delete_dir,
-    delete_file,
+    delete,
     empty_dir,
     path_exists,
 )
@@ -36,8 +35,8 @@ def test_undo_delete_file():
         f.write("file3 content")
     # Delete file1
     memory = FileSystemMemory()
-    result = delete_file(
-        path=file1,
+    result = delete(
+        paths=file1,
         file_system_memory=memory,
     )
     assert result["success"] is True
@@ -47,7 +46,7 @@ def test_undo_delete_file():
     # Undo the delete
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "delete_file"
+    assert undo_result["action_name"] == "delete"
     # Verify undo worked
     assert path_exists(file1)  # File should be back
     assert path_exists(file2)  # Other files should still exist
@@ -83,8 +82,8 @@ def test_undo_delete_dir():
         f.write("dir3 content")
     # Delete dir1
     memory = FileSystemMemory()
-    result = delete_dir(
-        path=dir1,
+    result = delete(
+        paths=dir1,
         file_system_memory=memory,
     )
     assert result["success"] is True
@@ -94,7 +93,7 @@ def test_undo_delete_dir():
     # Undo the delete
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "delete_dir"
+    assert undo_result["action_name"] == "delete"
     # Verify undo worked
     assert path_exists(dir1)  # Dir should be back
     assert path_exists(dir2)  # Other dirs should still exist

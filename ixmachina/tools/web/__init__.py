@@ -2,7 +2,12 @@
 Web-related tools for fetching URLs, scraping, etc.
 """
 
-from .fetch import fetch_url, fetch_json, post_request, check_url_status
+from .fetch import (
+    fetch_url,
+    fetch_json,
+    post_request,
+    check_url_status,
+)
 from .parse import (
     parse_html,
     extract_text,
@@ -26,6 +31,7 @@ __all__ = [
     "fetch_url",
     "fetch_json",
     "post_request",
+    "check_url_status",
     "parse_html",
     "extract_text",
     "find_elements",
@@ -35,7 +41,6 @@ __all__ = [
     "search_web",
     "search_web_simple",
     "search_brave",
-    "check_url_status",
     "discover_username_url_pattern",
     "discover_username_signature",
     "generate_non_existing_username",

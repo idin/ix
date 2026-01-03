@@ -7,6 +7,8 @@ import time
 import pytest
 from pathlib import Path
 from ixmachina.utils.persist import persist, set_cache_path, get_cache_path
+from ixmachina.tools.file_system.delete import delete
+from ixmachina.tools.file_system.path_utils import path_exists
 
 
 def test_disk_cache_basic():
@@ -14,9 +16,8 @@ def test_disk_cache_basic():
     cache_dir = Path(".cache/ix_test/persist")
     
     # Clean up any existing cache
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -55,9 +56,8 @@ def test_disk_cache_with_kwargs():
     """Test disk caching with keyword arguments."""
     cache_dir = Path(".cache/ix_test/persist_kwargs")
     
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -116,9 +116,8 @@ def test_cache_with_none_result():
     """Test that caching works correctly when function returns None."""
     cache_dir = Path(".cache/ix_test/persist_none")
     
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -152,9 +151,8 @@ def test_cache_expiration():
     """Test cache expiration functionality."""
     cache_dir = Path(".cache/ix_test/persist_expire")
     
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -196,9 +194,8 @@ def test_cache_with_complex_objects():
     """Test caching with complex objects (lists, dicts, etc.)."""
     cache_dir = Path(".cache/ix_test/persist_complex")
     
-    if cache_dir.exists():
-        import shutil
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -234,9 +231,8 @@ def test_default_cache_path():
     default_cache = Path(".cache/ix") / "test_function"
     
     # Clean up if exists (only the test-specific directory, not the entire parent)
-    if default_cache.exists():
-        import shutil
-        shutil.rmtree(default_cache)
+    if path_exists(str(default_cache)):
+        delete(paths=str(default_cache))
     
     call_count = {"count": 0}
     
@@ -259,9 +255,8 @@ def test_default_cache_path():
     assert call_count["count"] == 1
     
     # Clean up
-    if default_cache.parent.exists():
-        import shutil
-        shutil.rmtree(default_cache.parent)
+    if path_exists(str(default_cache.parent)):
+        delete(paths=str(default_cache.parent))
 
 
 def test_persist_preserves_docstring():
@@ -300,9 +295,8 @@ def test_global_cache_path_set_and_use():
     function_cache = global_cache / "test_function"
     
     # Clean up
-    if global_cache.exists():
-        import shutil
-        shutil.rmtree(global_cache)
+    if path_exists(str(global_cache)):
+        delete(paths=str(global_cache))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -333,9 +327,8 @@ def test_global_cache_path_set_and_use():
         assert call_count["count"] == 1
         
         # Clean up
-        if global_cache.exists():
-            import shutil
-            shutil.rmtree(global_cache)
+        if path_exists(str(global_cache)):
+            delete(paths=str(global_cache))
     finally:
         # Reset global cache path
         set_cache_path(original_cache_path)
@@ -350,9 +343,8 @@ def test_global_cache_path_reset_to_default():
     
     # Clean up
     for cache in [global_cache, default_cache.parent]:
-        if cache.exists():
-            import shutil
-            shutil.rmtree(cache)
+        if path_exists(str(cache)):
+            delete(paths=str(cache))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -404,9 +396,8 @@ def test_global_cache_path_reset_to_default():
         
         # Clean up
         for cache in [global_cache, default_cache.parent]:
-            if cache.exists():
-                import shutil
-                shutil.rmtree(cache)
+            if path_exists(str(cache)):
+                delete(paths=str(cache))
     finally:
         # Reset global cache path
         set_cache_path(original_cache_path)
@@ -420,9 +411,8 @@ def test_global_cache_path_with_cache_path_parameter():
     
     # Clean up
     for cache in [global_cache, override_cache]:
-        if cache.exists():
-            import shutil
-            shutil.rmtree(cache)
+        if path_exists(str(cache)):
+            delete(paths=str(cache))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -454,9 +444,8 @@ def test_global_cache_path_with_cache_path_parameter():
         
         # Clean up
         for cache in [global_cache, override_cache]:
-            if cache.exists():
-                import shutil
-                shutil.rmtree(cache)
+            if path_exists(str(cache)):
+                delete(paths=str(cache))
     finally:
         # Reset global cache path
         set_cache_path(original_cache_path)

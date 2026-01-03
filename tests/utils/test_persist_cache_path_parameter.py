@@ -5,16 +5,17 @@ Tests for persist decorator with cache_path parameter injection.
 import pytest
 from pathlib import Path
 from ixmachina.utils.persist import persist, set_cache_path, get_cache_path
+from ixmachina.tools.file_system.delete import delete
+from ixmachina.tools.file_system.path_utils import path_exists
 
 
 def test_cache_path_parameter_injection():
     """Test that cache_path parameter is added to function signature."""
     cache_dir = ".cache/ix_test/cache_path_param"
     
-    import shutil
     cache_path = Path(cache_dir)
-    if cache_path.exists():
-        shutil.rmtree(cache_path)
+    if path_exists(str(cache_path)):
+        delete(paths=str(cache_path))
     
     # Save original global cache path
     original_cache_path = get_cache_path()
@@ -52,8 +53,8 @@ def test_cache_path_parameter_override():
     # Clean up
     import shutil
     for cache in [Path(default_cache), Path(override_cache), Path(".cache/ix_test/override_path")]:
-        if cache.exists():
-            shutil.rmtree(cache)
+        if path_exists(str(cache)):
+            delete(paths=str(cache))
     
     # Save original global cache path
     original_cache_path = get_cache_path()

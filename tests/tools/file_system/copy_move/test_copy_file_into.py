@@ -5,7 +5,7 @@ Tests for copy_file_into function.
 import pytest
 import os
 
-from ixmachina.tools.file_system import copy_file_into
+from ixmachina.tools.file_system import copy_into
 from ixmachina.tools.file_system import compare_files
 from ixmachina.tools.file_system import empty_dir
 from ixmachina.tools.file_system import path_exists
@@ -35,10 +35,11 @@ def test_copy_file_into_copies_file():
     with open(source_file, "w") as f:
         f.write("test content")
     
-    result = copy_file_into(source_path=source_file, destination_dir=dest_dir)
+    result = copy_into(source_paths=source_file, destination_dir=dest_dir)
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][source_file]
+    assert single_result["error"] is None
     assert path_exists(source_file)  # Source should still exist
     assert path_exists(os.path.join(dest_dir, "file.txt"))  # Copy should exist
     
@@ -69,10 +70,11 @@ def test_copy_file_into_destination_exists_fails():
     with open(existing_file, "w") as f:
         f.write("existing content")
     
-    result = copy_file_into(source_path=source_file, destination_dir=dest_dir)
+    result = copy_into(source_paths=source_file, destination_dir=dest_dir)
     
     assert result["success"] is False
-    assert "Overwrite is not allowed" in result["error"]
+    single_result = result["results"][source_file]
+    assert "Overwrite is not allowed" in single_result["error"]
     assert path_exists(source_file)  # Source should still exist
     
     # Clean up
@@ -88,10 +90,11 @@ def test_copy_file_into_source_not_exists():
     dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest_dir")
     os.makedirs(dest_dir, exist_ok=True)
     
-    result = copy_file_into(source_path=source_file, destination_dir=dest_dir)
+    result = copy_into(source_paths=source_file, destination_dir=dest_dir)
     
     assert result["success"] is False
-    assert "does not exist" in result["error"]
+    single_result = result["results"][source_file]
+    assert "does not exist" in single_result["error"]
     
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)

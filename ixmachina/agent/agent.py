@@ -4,6 +4,8 @@ Advanced Agent class for chatbot-style interactions with LLMs.
 
 import json
 from typing import List, Dict, Optional, Callable, Any, Union
+import inspect
+from functools import partial
 
 from ..llm import LLM
 from ..llm.tools import prepare_tools_for_provider
@@ -60,7 +62,8 @@ class Agent(BaseAgent):
         conversation_object_prefix: str = "conv_obj:",
         tool_call_object_prefix: str = "tool_obj:",
         verbose: bool = True,
-        default_return_mode: Optional[str] = None
+        default_return_mode: Optional[str] = None,
+        working_directory: Optional[str] = None,
     ) -> None:
         """
         Initialize an Agent.
@@ -83,6 +86,8 @@ class Agent(BaseAgent):
             tool_call_object_prefix: Prefix for tool call result references in tool arguments (default: "tool_obj:").
                 References must be wrapped in square brackets: [tool_obj:conversation_id:tool_call_id].
             verbose: If True, print detailed information about agent's thinking process.
+            working_directory: Optional working directory path for agent's persistent data
+                (cache, databases, etc.). If provided, creates the directory if it doesn't exist.
         """
         # Add memory guidance to system prompt
         memory_guidance = (
@@ -108,6 +113,7 @@ class Agent(BaseAgent):
             system_prompt=enhanced_system_prompt,
             tools=None,  # We'll add tools after built-ins
             verbose=verbose,
+            working_directory=working_directory,
         )
         
         # Store prefixes in lowercase for consistent matching
@@ -691,22 +697,30 @@ class Agent(BaseAgent):
         Automatically inject file_system_memory into tool arguments if the tool accepts it.
         
         Args:
-            func: The tool function.
+            func: The tool function (can be a functools.partial object).
             arguments: Dictionary of tool arguments.
         
         Returns:
             Dictionary with file_system_memory injected if needed.
         """
-        import inspect
-        
-        # Get function signature
-        sig = inspect.signature(func)
+        # Handle functools.partial objects - get signature from underlying function
+        if isinstance(func, partial):
+            underlying_func = func.func
+            sig = inspect.signature(underlying_func)
+            # Check if file_system_memory is already bound in the partial
+            if func.keywords and 'file_system_memory' in func.keywords:
+                # Already bound, don't inject and remove from arguments if present
+                arguments.pop('file_system_memory', None)
+                return arguments
+        else:
+            sig = inspect.signature(func)
         
         # Check if function has file_system_memory parameter
         if 'file_system_memory' in sig.parameters:
             # Only inject if not already provided or is None
             if 'file_system_memory' not in arguments or arguments.get('file_system_memory') is None:
-                arguments['file_system_memory'] = self._file_system_memory
+                if hasattr(self, '_file_system_memory'):
+                    arguments['file_system_memory'] = self._file_system_memory
         
         return arguments
 

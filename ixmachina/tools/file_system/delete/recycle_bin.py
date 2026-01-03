@@ -10,6 +10,10 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 
 from ..path_utils import path_exists
+from ..constants import DEFAULT_RECYCLE_BIN_NAME
+
+# Global recycle bin path override (can be set via set_recycle_bin_path)
+_global_recycle_bin_path: Optional[str] = None
 
 
 def get_recycle_bin_path() -> str:
@@ -17,13 +21,43 @@ def get_recycle_bin_path() -> str:
     Get the path to the recycle bin directory.
 
     Returns:
-        Path to the recycle bin directory.
+        Path to the recycle bin directory. Uses global override if set,
+        otherwise uses default location (~/.ix_recycle_bin).
     """
+    # Use global override if set
+    if _global_recycle_bin_path is not None:
+        return _global_recycle_bin_path
+    
     # Use ~/.ix_recycle_bin as the default location
     home_dir = os.path.expanduser("~")
-    recycle_bin = os.path.join(home_dir, ".ix_recycle_bin")
+    recycle_bin = os.path.join(home_dir, DEFAULT_RECYCLE_BIN_NAME)
     return recycle_bin
 
+
+def set_recycle_bin_path(path: Optional[str]) -> None:
+    """
+    Set the global recycle bin path.
+
+    This allows you to override the default recycle bin path globally, which is useful
+    for tests or when you want to use a custom recycle bin location.
+
+    Args:
+        path: The global recycle bin path to use. If None, resets to default behavior
+              (uses ~/.ix_recycle_bin).
+
+    Example:
+        ```python
+        # Set global recycle bin path for tests
+        set_recycle_bin_path("/tmp/test_recycle_bin")
+
+        # All deletions will now use /tmp/test_recycle_bin
+
+        # Reset to default
+        set_recycle_bin_path(None)
+        ```
+    """
+    global _global_recycle_bin_path
+    _global_recycle_bin_path = path
 
 def get_recycle_bin_index_path() -> str:
     """

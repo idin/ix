@@ -5,7 +5,7 @@ Tests for delete_dir function.
 import pytest
 import os
 
-from ixmachina.tools.file_system import delete_dir, path_exists, empty_dir
+from ixmachina.tools.file_system import delete, path_exists, empty_dir
 from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
 
 
@@ -23,12 +23,13 @@ def test_delete_dir_success():
     
     assert path_exists(test_dir)
     
-    result = delete_dir(path=test_dir)
+    result = delete(paths=test_dir)
     
     assert result["success"] is True
-    assert result["error"] is None
-    assert result["dir_path"] == test_dir
-    assert result["recycle_bin_path"] is not None
+    single_result = result["results"][test_dir]
+    assert single_result["error"] is None
+    assert single_result["path"] == test_dir
+    assert single_result["recycle_bin_path"] is not None
     assert not path_exists(test_dir)  # Directory should be gone
     
     # Clean up
@@ -36,29 +37,31 @@ def test_delete_dir_success():
 
 
 def test_delete_dir_nonexistent():
-    """Test delete_dir returns error for nonexistent directory."""
-    result = delete_dir(path="/nonexistent/path/dir")
+    """Test delete returns error for nonexistent directory."""
+    result = delete(paths="/nonexistent/path/dir")
     
     assert result["success"] is False
-    assert result["error"] is not None
-    assert "does not exist" in result["error"]
-    assert result["recycle_bin_path"] is None
+    single_result = result["results"]["/nonexistent/path/dir"]
+    assert single_result["error"] is not None
+    assert "does not exist" in single_result["error"]
+    assert single_result["recycle_bin_path"] is None
 
 
 def test_delete_dir_with_file():
-    """Test delete_dir returns error when path is a file."""
+    """Test delete works with file (should succeed, not error)."""
     os.makedirs(FILE_SYSTEM_TEST_DIR, exist_ok=True)
     
     test_file = os.path.join(FILE_SYSTEM_TEST_DIR, "file.txt")
     with open(test_file, "w") as f:
         f.write("content")
     
-    result = delete_dir(path=test_file)
+    result = delete(paths=test_file)
     
-    assert result["success"] is False
-    assert result["error"] is not None
-    assert "not a directory" in result["error"]
-    assert result["recycle_bin_path"] is None
+    # delete() handles both files and directories, so this should succeed
+    assert result["success"] is True
+    single_result = result["results"][test_file]
+    assert single_result["error"] is None
+    assert single_result["recycle_bin_path"] is not None
     
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)
@@ -80,7 +83,7 @@ def test_delete_dir_with_nested_structure():
     with open(file2, "w") as f:
         f.write("content2")
     
-    result = delete_dir(path=test_dir)
+    result = delete(paths=test_dir)
     
     assert result["success"] is True
     assert not path_exists(test_dir)
@@ -106,20 +109,20 @@ def test_delete_dir_multiple_directories():
             f.write("content")
     
     # Delete dir1
-    result1 = delete_dir(path=dir1)
+    result1 = delete(paths=dir1)
     assert result1["success"] is True
     assert not path_exists(dir1)
     assert path_exists(dir2)
     assert path_exists(dir3)
     
     # Delete dir2
-    result2 = delete_dir(path=dir2)
+    result2 = delete(paths=dir2)
     assert result2["success"] is True
     assert not path_exists(dir2)
     assert path_exists(dir3)
     
     # Delete dir3
-    result3 = delete_dir(path=dir3)
+    result3 = delete(paths=dir3)
     assert result3["success"] is True
     assert not path_exists(dir3)
     
@@ -134,10 +137,11 @@ def test_delete_dir_without_memory():
     test_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dir.txt")
     os.makedirs(test_dir)
     
-    result = delete_dir(path=test_dir)
+    result = delete(paths=test_dir)
     
     assert result["success"] is True
-    assert result["error"] is None
+    single_result = result["results"][test_dir]
+    assert single_result["error"] is None
     assert not path_exists(test_dir)
     
     # Clean up

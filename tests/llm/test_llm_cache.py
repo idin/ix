@@ -5,10 +5,11 @@ Tests for LLM caching functionality.
 from pathlib import Path
 from tests.conftest import DEFAULT_TEST_MODEL
 from tests.api_keys import get_openai_api_key
-import shutil
 
 from ixmachina.llm import LLM
 from ixmachina.utils.persist import set_cache_path, get_cache_path
+from ixmachina.tools.file_system.delete import delete
+from ixmachina.tools.file_system.path_utils import path_exists
 
 
 def test_llm_cache_disabled_by_default():
@@ -33,8 +34,8 @@ def test_llm_cache_returns_cached_result():
 
     # Set up test cache directory
     cache_dir = Path(".cache/ix_test/llm_cache")
-    if cache_dir.exists():
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original cache path
     original_cache_path = get_cache_path()
@@ -65,8 +66,8 @@ def test_llm_cache_returns_cached_result():
         # Restore original cache path
         set_cache_path(original_cache_path)
         # Clean up test cache
-        if cache_dir.exists():
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
 
 
 def test_llm_cache_different_queries_not_cached():
@@ -75,8 +76,8 @@ def test_llm_cache_different_queries_not_cached():
 
     # Set up test cache directory
     cache_dir = Path(".cache/ix_test/llm_cache")
-    if cache_dir.exists():
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original cache path
     original_cache_path = get_cache_path()
@@ -107,8 +108,8 @@ def test_llm_cache_different_queries_not_cached():
         # Restore original cache path
         set_cache_path(original_cache_path)
         # Clean up test cache
-        if cache_dir.exists():
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
 
 
 def test_llm_cache_disabled_no_caching():
@@ -117,8 +118,8 @@ def test_llm_cache_disabled_no_caching():
 
     # Set up test cache directory
     cache_dir = Path(".cache/ix_test/llm_cache")
-    if cache_dir.exists():
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original cache path
     original_cache_path = get_cache_path()
@@ -144,8 +145,8 @@ def test_llm_cache_disabled_no_caching():
         # Restore original cache path
         set_cache_path(original_cache_path)
         # Clean up test cache
-        if cache_dir.exists():
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
 
 
 def test_llm_cache_with_different_parameters():
@@ -154,8 +155,8 @@ def test_llm_cache_with_different_parameters():
 
     # Set up test cache directory
     cache_dir = Path(".cache/ix_test/llm_cache")
-    if cache_dir.exists():
-        shutil.rmtree(cache_dir)
+    if path_exists(str(cache_dir)):
+        delete(paths=str(cache_dir))
     
     # Save original cache path
     original_cache_path = get_cache_path()
@@ -183,6 +184,6 @@ def test_llm_cache_with_different_parameters():
         # Restore original cache path
         set_cache_path(original_cache_path)
         # Clean up test cache
-        if cache_dir.exists():
-            shutil.rmtree(cache_dir)
+        if path_exists(str(cache_dir)):
+            delete(paths=str(cache_dir))
 

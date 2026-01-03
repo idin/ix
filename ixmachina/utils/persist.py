@@ -14,6 +14,11 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Union
 
+# Import delete as _delete to avoid naming conflict with the local delete() method
+# defined in the persist decorator (line 527). The local delete() method is attached
+# to the decorated function and would shadow the imported delete function.
+from ..tools.file_system import delete as _delete
+
 DEFAULT_CACHE_PATH = ".cache/ix"
 
 # Global cache path override (can be set via set_cache_path)
@@ -320,6 +325,7 @@ def resolve_cache_file_path(
     else:
         cache_dir = cache_path_obj
     
+    # Lazy creation: create directory (and all parent directories) only when needed
     cache_dir.mkdir(parents=True, exist_ok=True)
     # Use first 16 chars of hash for filename (sufficient uniqueness)
     return cache_dir / f"{arg_hash[:16]}.cache"
@@ -537,10 +543,10 @@ def persist(
                 if cache_key in _memory_cache:
                     del _memory_cache[cache_key]
             else:
-                # Delete from disk cache
+                # Delete from disk cache using recycle bin
                 if cache_file_path is not None and cache_file_path.exists():
                     try:
-                        cache_file_path.unlink()
+                        _delete(paths=str(cache_file_path))
                     except (IOError, OSError):
                         pass
         

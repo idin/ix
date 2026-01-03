@@ -123,3 +123,61 @@ def test_check_url_status_uses_get_when_head_disabled():
     assert result["success"] is True
     assert result["exists"] is True
     assert result["status_code"] == 200
+
+
+def test_check_url_status_batch_success():
+    """Test check_url_status with multiple URLs."""
+    urls = [
+        "https://httpbin.org/get",
+        "https://httpbin.org/json",
+        "https://httpbin.org/uuid",
+    ]
+    result = check_url_status(url=urls)
+    
+    assert isinstance(result, dict)
+    assert result["success"] is True
+    assert "results" in result
+    assert len(result["results"]) == 3
+    assert result["total_count"] == 3
+    assert result["success_count"] == 3
+    assert result["failure_count"] == 0
+    assert len(result["successful_urls"]) == 3
+    assert len(result["failed_urls"]) == 0
+    
+    # Check each result
+    for url in urls:
+        assert url in result["results"]
+        assert result["results"][url]["success"] is True
+        assert result["results"][url]["exists"] is True
+        assert result["results"][url]["status_code"] == 200
+
+
+def test_check_url_status_batch_mixed_success_failure():
+    """Test check_url_status with multiple URLs where some succeed and some fail."""
+    urls = [
+        "https://httpbin.org/get",
+        "https://httpbin.org/status/404",
+        "https://this-domain-does-not-exist-12345-xyz.com",
+    ]
+    result = check_url_status(url=urls)
+    
+    assert isinstance(result, dict)
+    assert result["success"] is True  # At least one succeeded
+    assert "results" in result
+    assert len(result["results"]) == 3
+    assert result["total_count"] == 3
+    assert result["success_count"] == 2  # get succeeds, 404 succeeds (site exists), DNS fails
+    assert result["failure_count"] == 1
+    
+    # Check successful URLs
+    assert "https://httpbin.org/get" in result["successful_urls"]
+    assert "https://httpbin.org/status/404" in result["successful_urls"]
+    assert result["results"]["https://httpbin.org/get"]["success"] is True
+    assert result["results"]["https://httpbin.org/get"]["exists"] is True
+    assert result["results"]["https://httpbin.org/status/404"]["success"] is True
+    assert result["results"]["https://httpbin.org/status/404"]["exists"] is True
+    
+    # Check failed URL
+    assert "https://this-domain-does-not-exist-12345-xyz.com" in result["failed_urls"]
+    assert result["results"]["https://this-domain-does-not-exist-12345-xyz.com"]["success"] is False
+    assert result["results"]["https://this-domain-does-not-exist-12345-xyz.com"]["exists"] is False

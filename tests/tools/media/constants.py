@@ -6,9 +6,7 @@ This module contains constants used across all media test files.
 
 import os
 
-# Test directory for media tests - located in tests/tools/media/
-MEDIA_TEST_DIR = os.path.join(
-    os.path.dirname(__file__),
-    "ixmachina_tools_media_test_directory"
-)
-
+# Protected source directory where manually added media files are stored
+# Tests read directly from here - no copying or symlinks needed
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+MEDIA_SOURCE_DIR = os.path.join(PROJECT_ROOT, ".test_source_protected", "media_tools")

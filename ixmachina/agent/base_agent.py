@@ -2,11 +2,13 @@
 Base Agent class for basic chatbot-style interactions with LLMs.
 """
 
+import os
 from typing import List, Dict, Optional, Callable, Any, Union
 
 from ..llm import LLM
 from ..llm.tools import prepare_tools_for_provider
 from ..utils.usage_tracker import UsageTracker
+from ..utils.persist import set_cache_path
 from .verbose import (
     print_iteration,
     print_conversation_context,
@@ -39,6 +41,7 @@ class BaseAgent:
         tools: Optional[List[Callable]] = None,
         verbose: bool = True,
         default_return_mode: Optional[str] = None,
+        working_directory: Optional[str] = None,
     ) -> None:
         """
         Initialize a BaseAgent.
@@ -54,7 +57,19 @@ class BaseAgent:
             tools: Optional list of callable functions to use as tools.
             verbose: If True, print detailed information about agent's thinking process.
             default_return_mode: Default return mode to use if not specified in run().
+            working_directory: Optional working directory path for agent's persistent data
+                (cache, databases, etc.). If provided, creates the directory if it doesn't exist.
         """
+        # Set up working directory (lazy creation - only created when first needed)
+        if working_directory:
+            self.working_directory = working_directory
+            # Set cache path to working_directory/cache
+            # Both working directory and cache directory will be created lazily when first used
+            cache_path = os.path.join(working_directory, "cache")
+            set_cache_path(cache_path)
+        else:
+            self.working_directory = None
+        
         # Handle LLM initialization
         self._initialize_llms(llm=llm, default_llm=default_llm)
         self.system_prompt = system_prompt
@@ -95,6 +110,15 @@ class BaseAgent:
             prepared = prepare_tools_for_provider(tools, provider)
             self.tools = prepared["tools"]
             self.tool_schemas = prepared["schemas"]
+    
+    def _ensure_working_directory(self) -> None:
+        """
+        Ensure working directory exists, creating it if necessary.
+        
+        Called lazily when working directory is first needed.
+        """
+        if self.working_directory:
+            os.makedirs(self.working_directory, exist_ok=True)
     
     def _initialize_llms(
         self,
@@ -322,8 +346,9 @@ class BaseAgent:
         """
         Extract the output value from a tool result, removing metadata.
         
-        If the tool result is a dictionary with "success" and "error" fields,
-        returns a copy without those metadata fields. Otherwise returns the result as-is.
+        Uses the standard RESULT_KEY from tool constants to extract the primary output.
+        If RESULT_KEY is present, returns it directly (standardized output).
+        Otherwise falls back to removing success/error metadata and returning the remaining fields.
         
         Args:
             tool_result: The raw tool result with metadata.
@@ -331,9 +356,14 @@ class BaseAgent:
         Returns:
             The extracted output value without metadata.
         """
-        if isinstance(tool_result, dict) and "success" in tool_result:
-            # Extract all fields except success and error
-            output = {k: v for k, v in tool_result.items() if k not in ("success", "error")}
+        from ..tools.constants import RESULT_KEY, SUCCESS_KEY, ERROR_KEY
+        
+        if isinstance(tool_result, dict) and SUCCESS_KEY in tool_result:
+            # If RESULT_KEY is present, return it directly (standardized output)
+            if RESULT_KEY in tool_result:
+                return tool_result[RESULT_KEY]
+            # Fallback: Extract all fields except success and error
+            output = {k: v for k, v in tool_result.items() if k not in (SUCCESS_KEY, ERROR_KEY)}
             # If only one field remains, return that value directly
             if len(output) == 1:
                 return next(iter(output.values()))

@@ -124,3 +124,110 @@ def test_post_request_error():
     assert result["status_code"] == 500
     assert result["error"] is not None
 
+
+def test_fetch_url_batch_success():
+    """Test fetch_url with multiple URLs."""
+    urls = [
+        "https://httpbin.org/get",
+        "https://httpbin.org/json",
+        "https://httpbin.org/uuid",
+    ]
+    result = fetch_url(url=urls)
+    
+    assert isinstance(result, dict)
+    assert result["success"] is True
+    assert "results" in result
+    assert len(result["results"]) == 3
+    assert result["total_count"] == 3
+    assert result["success_count"] == 3
+    assert result["failure_count"] == 0
+    assert len(result["successful_urls"]) == 3
+    assert len(result["failed_urls"]) == 0
+    
+    # Check each result
+    for url in urls:
+        assert url in result["results"]
+        assert result["results"][url]["success"] is True
+        assert result["results"][url]["status_code"] == 200
+
+
+def test_fetch_url_batch_mixed_success_failure():
+    """Test fetch_url with multiple URLs where some succeed and some fail."""
+    urls = [
+        "https://httpbin.org/get",
+        "https://httpbin.org/status/404",
+        "https://httpbin.org/json",
+    ]
+    result = fetch_url(url=urls)
+    
+    assert isinstance(result, dict)
+    assert result["success"] is True  # At least one succeeded
+    assert "results" in result
+    assert len(result["results"]) == 3
+    assert result["total_count"] == 3
+    assert result["success_count"] == 2
+    assert result["failure_count"] == 1
+    assert len(result["successful_urls"]) == 2
+    assert len(result["failed_urls"]) == 1
+    
+    # Check successful URLs
+    assert "https://httpbin.org/get" in result["successful_urls"]
+    assert "https://httpbin.org/json" in result["successful_urls"]
+    assert result["results"]["https://httpbin.org/get"]["success"] is True
+    assert result["results"]["https://httpbin.org/json"]["success"] is True
+    
+    # Check failed URL
+    assert "https://httpbin.org/status/404" in result["failed_urls"]
+    assert result["results"]["https://httpbin.org/status/404"]["success"] is False
+
+
+def test_fetch_json_batch_success():
+    """Test fetch_json with multiple URLs."""
+    urls = [
+        "https://httpbin.org/json",
+        "https://httpbin.org/uuid",
+    ]
+    result = fetch_json(url=urls)
+    
+    assert isinstance(result, dict)
+    assert result["success"] is True
+    assert "results" in result
+    assert len(result["results"]) == 2
+    assert result["total_count"] == 2
+    assert result["success_count"] == 2
+    assert result["failure_count"] == 0
+    
+    # Check each result
+    for url in urls:
+        assert url in result["results"]
+        assert result["results"][url]["success"] is True
+        assert result["results"][url]["status_code"] == 200
+        assert "data" in result["results"][url]
+
+
+def test_fetch_json_batch_mixed_success_failure():
+    """Test fetch_json with multiple URLs where some succeed and some fail."""
+    urls = [
+        "https://httpbin.org/json",
+        "https://httpbin.org/html",  # Not JSON, will fail parsing
+        "https://httpbin.org/status/404",  # HTTP error
+    ]
+    result = fetch_json(url=urls)
+    
+    assert isinstance(result, dict)
+    assert result["success"] is True  # At least one succeeded
+    assert "results" in result
+    assert len(result["results"]) == 3
+    assert result["total_count"] == 3
+    assert result["success_count"] == 1
+    assert result["failure_count"] == 2
+    
+    # Check successful URL
+    assert "https://httpbin.org/json" in result["successful_urls"]
+    assert result["results"]["https://httpbin.org/json"]["success"] is True
+    assert "data" in result["results"]["https://httpbin.org/json"]
+    
+    # Check failed URLs
+    assert "https://httpbin.org/html" in result["failed_urls"]
+    assert "https://httpbin.org/status/404" in result["failed_urls"]
+

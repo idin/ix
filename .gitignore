@@ -55,3 +55,9 @@ notebooks/
 
 # Interim documentation and planning files
 .documents/
+
+# Test data directory (ignore all contents)
+.test_data/
+
+# Protected test source files (manually added media files, etc.)
+.test_source_protected/

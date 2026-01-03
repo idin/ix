@@ -7,7 +7,7 @@ import os
 
 from ixmachina.tools.file_system import (
     FileSystemMemory, undo,
-    clone_file_to_path,
+    clone_to_path,
     empty_dir,
     path_exists,
 )
@@ -36,9 +36,8 @@ def test_undo_twice_should_fail():
         f.write("test content")
     memory = FileSystemMemory()
     # Clone file
-    result = clone_file_to_path(
-        source_path=source_file,
-        destination_path=cloned_file,
+    result = clone_to_path(
+        source_destination_pairs={"source_path": source_file, "destination_path": cloned_file},
         file_system_memory=memory,
     )
     assert result["success"] is True
@@ -46,7 +45,7 @@ def test_undo_twice_should_fail():
     # First undo should succeed
     undo_result = memory.undo()
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "clone_file_to_path"
+    assert undo_result["action_name"] == "clone_to_path"
     assert not path_exists(cloned_file)
     # Second undo should fail
     undo_result2 = memory.undo()
@@ -65,9 +64,8 @@ def test_undo_using_standalone_function():
         f.write("test content")
     memory = FileSystemMemory()
     # Clone file
-    result = clone_file_to_path(
-        source_path=source_file,
-        destination_path=cloned_file,
+    result = clone_to_path(
+        source_destination_pairs={"source_path": source_file, "destination_path": cloned_file},
         file_system_memory=memory,
     )
     assert result["success"] is True
@@ -75,7 +73,7 @@ def test_undo_using_standalone_function():
     # Undo using standalone function
     undo_result = undo(file_system_memory=memory)
     assert undo_result["success"] is True
-    assert undo_result["action_name"] == "clone_file_to_path"
+    assert undo_result["action_name"] == "clone_to_path"
     assert not path_exists(cloned_file)
     # Clean up
     empty_dir(path=FILE_SYSTEM_TEST_DIR)
