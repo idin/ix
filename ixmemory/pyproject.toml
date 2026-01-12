@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ixmemory"
+version = "0.1.0"
+description = "Memory systems package providing persistent storage for objects, facts, relationships, and graph-based data"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Ix", email = "ix@ixmachina.ai"}
+]
+
+dependencies = [
+    "ixcore>=0.1.0",
+    "ixutils>=0.1.0",
+    "sentence-transformers>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ixmemory*"]
+

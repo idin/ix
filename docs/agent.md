@@ -2,6 +2,8 @@
 
 The Agent class provides a chatbot-style interface for interacting with LLMs, with support for tools, multiple conversations, object storage, and special object references.
 
+**NOTE: Architecture Evolution** - The Agent class is planned for a major refactor (see `.documents/AGENT_IDEAS.md`) that will introduce a cleaner architecture with Memory, Toolbox, Cognition, and Conductor components. The public API will remain backward-compatible, but the internal structure will be significantly improved.
+
 ## Overview
 
 The `Agent` class extends `BaseAgent` with advanced features:
@@ -9,7 +11,9 @@ The `Agent` class extends `BaseAgent` with advanced features:
 - **Special object system**: Reference system objects, saved objects, and tool call results in tool arguments
 - **Built-in save/load tools**: Save and retrieve objects within conversations or globally
 - **Advanced type conversion**: Automatic JSON/Python literal parsing for tool arguments
-- **Object reference resolution**: Use `[sys:self]`, `[obj:name]`, etc. in tool arguments
+- **Object reference resolution**: Use `<sys:self>`, `<obj:name>`, etc. in tool arguments
+
+**Note on Syntax**: We use angle brackets `<prefix:content>` instead of square brackets `[prefix:content]` to avoid ambiguity with JSON arrays. Angle brackets are never valid JSON syntax, making them unambiguous and easy to detect in tool arguments.
 
 ## Basic Usage
 
@@ -62,9 +66,9 @@ Special objects allow tools to access the agent itself, LLMs, and other system-l
 ### System Objects
 
 System objects are predefined and always available:
-- `[sys:self]` - The agent instance itself
-- `[sys:llm]` - The default LLM instance
-- `[sys:llm:name]` - A specific LLM instance (if multiple LLMs are provided)
+- `<sys:self>` - The agent instance itself
+- `<sys:llm>` - The default LLM instance
+- `<sys:llm:name>` - A specific LLM instance (if multiple LLMs are provided)
 
 You can add custom system objects:
 
@@ -72,7 +76,7 @@ You can add custom system objects:
 # Add a custom system object
 agent['my_database'] = database_connection
 
-# Now tools can reference it: [sys:my_database]
+# Now tools can reference it: <sys:my_database>
 ```
 
 ### Global Saved Objects
@@ -87,7 +91,7 @@ agent.run("save(name='config', value={'api_key': '123'}, global_memory=True)")
 agent.run("load(name='config', global_memory=True)")
 ```
 
-Reference in tool arguments: `[obj:object_name]`
+Reference in tool arguments: `<obj:object_name>`
 
 ### Conversation-Scoped Objects
 
@@ -101,7 +105,7 @@ agent.run("save(name='user_preferences', value={'theme': 'dark'})")
 agent.run("load(name='user_preferences')")
 ```
 
-Reference in tool arguments: `[conv_obj:conversation_id:object_name]`
+Reference in tool arguments: `<conv_obj:conversation_id:object_name>`
 
 ### Tool Call Results
 
@@ -113,10 +117,10 @@ agent.run("search_web(query='python tutorial')")
 # Tool call ID: "call_abc123"
 
 # Reference that result in a later tool call
-# Use: [tool_obj:conversation_id:call_abc123]
+# Use: <tool_obj:conversation_id:call_abc123>
 ```
 
-Reference in tool arguments: `[tool_obj:conversation_id:tool_call_id]`
+Reference in tool arguments: `<tool_obj:conversation_id:tool_call_id>`
 
 ## Built-in Tools
 
@@ -173,13 +177,13 @@ Tools can reference special objects using bracket notation in their arguments:
 
 ```python
 @bind(agent=my_agent)
-def analyze_with_agent(data: str, agent_ref: str = "[sys:self]"):
+def analyze_with_agent(data: str, agent_ref: str = "<sys:self>"):
     """
     Analyze data using the agent.
     
     Args:
         data: Data to analyze
-        agent_ref: Reference to agent (default: [sys:self])
+        agent_ref: Reference to agent (default: <sys:self>)
     """
     # agent_ref will be automatically resolved to the agent instance
     agent = agent_ref  # This is the actual agent object
@@ -187,12 +191,12 @@ def analyze_with_agent(data: str, agent_ref: str = "[sys:self]"):
 ```
 
 **Reference formats**:
-- `[sys:key]` - System objects
-- `[obj:object_name]` - Global saved objects
-- `[conv_obj:conversation_id:object_name]` - Conversation-scoped objects
-- `[tool_obj:conversation_id:tool_call_id]` - Tool call results
+- `<sys:key>` - System objects
+- `<obj:object_name>` - Global saved objects
+- `<conv_obj:conversation_id:object_name>` - Conversation-scoped objects
+- `<tool_obj:conversation_id:tool_call_id>` - Tool call results
 
-**Important**: References must be wrapped in square brackets and passed as strings. The agent automatically resolves them when calling tools.
+**Important**: References must be wrapped in angle brackets `<>` (not square brackets `[]` to avoid ambiguity with JSON arrays) and passed as strings. The agent automatically resolves them when calling tools.
 
 ## Multiple LLMs
 

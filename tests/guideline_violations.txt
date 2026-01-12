@@ -1,0 +1,21 @@
+Found 3 guideline violation(s):
+
+Summary by rule type:
+  class_size: 1 violations
+  file_size: 1 violations
+  no_pytest_skip: 1 violations
+
+================================================================================
+
+
+CLASS_SIZE (1 violations):
+--------------------------------------------------------------------------------
+ixmachina/tools/text/name_registry.py:22: class_size: Class 'NameRegistry' has 1209 lines. Classes should not exceed ~512 lines. Consider breaking into smaller classes or using composition.
+
+FILE_SIZE (1 violations):
+--------------------------------------------------------------------------------
+ixmachina/tools/text/name_registry.py:1: file_size: File has 1231 lines. Files should not exceed ~512 lines. Consider breaking into smaller modules.
+
+NO_PYTEST_SKIP (1 violations):
+--------------------------------------------------------------------------------
+tests/tools/media/test_get_image_info.py:86: no_pytest_skip: pytest.skip() detected. Tests should fail if requirements aren't met, not silently skip. If skipping for optional dependencies, add a comment explaining why.

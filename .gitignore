@@ -61,3 +61,11 @@ notebooks/
 
 # Protected test source files (manually added media files, etc.)
 .test_source_protected/
+
+# Cache files
+.cache/
+
+# Test and violation registries
+**/TEST_REGISTRY*.md
+**/VIOLATIONS_REGISTRY*.md
+**/TEST_ISSUES*.md

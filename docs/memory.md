@@ -2,9 +2,11 @@
 
 The Memory system provides persistent storage for objects and facts with relationships, semantic search, and graph traversal capabilities.
 
+**NOTE: Two Memory Systems** - This document describes `SemanticMemory` (semantic memory with facts, relationships, embeddings). This is **separate** from the agent's `Memory` component (planned in `.documents/AGENT_IDEAS.md`), which handles agent working/session storage (conversations, objects, tool calls). Both serve different purposes and coexist.
+
 ## Overview
 
-The `MemoryStore` class provides:
+The `SemanticMemory` class provides:
 - **Object storage**: Store objects with metadata, descriptions, and embeddings
 - **Fact-based relationships**: Create n-ary relationships between objects
 - **Graph traversal**: Find related objects through relationship chains
@@ -14,10 +16,10 @@ The `MemoryStore` class provides:
 ## Basic Usage
 
 ```python
-from ixmachina.memory import MemoryStore
+from ixmachina.semantic_memory import SemanticMemory
 
 # Create a memory store
-memory = MemoryStore(database_path="memory.db")
+memory = SemanticMemory(database_path="memory.db")
 
 # Save an object
 memory.save_object(
@@ -128,7 +130,7 @@ Embeddings are automatically generated when `auto_embed=True` (default):
 
 ```python
 # Auto-embedding enabled (default)
-memory = MemoryStore(database_path="memory.db", auto_embed=True)
+memory = SemanticMemory(database_path="memory.db", auto_embed=True)
 
 # Embeddings generated automatically when saving
 memory.save_object(
@@ -139,10 +141,10 @@ memory.save_object(
 # Embedding generated automatically
 
 # Use custom embedding generator
-from ixmachina.memory import EmbeddingGenerator
+from ixmachina.semantic_memory import EmbeddingGenerator
 
 custom_generator = EmbeddingGenerator()
-memory = MemoryStore(
+memory = SemanticMemory(
     database_path="memory.db",
     embedding_generator=custom_generator
 )
@@ -154,7 +156,7 @@ Use in-memory database for testing or temporary storage:
 
 ```python
 # In-memory database (not persisted)
-memory = MemoryStore(database_path=None)  # or ":memory:"
+memory = SemanticMemory(database_path=None)  # or ":memory:"
 
 # Data is lost when memory object is deleted
 ```

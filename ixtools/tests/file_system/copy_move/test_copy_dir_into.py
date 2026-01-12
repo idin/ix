@@ -1,0 +1,103 @@
+"""
+Tests for copy_dir_into function.
+"""
+
+import pytest
+import os
+
+from ixtools.file_system import copy_into
+from ixtools.file_system import compare_dirs
+from ixtools.file_system import empty_dir
+from ixtools.file_system import path_exists
+from ..tools_file_system_constants import FILE_SYSTEM_TEST_DIR
+
+
+def test_copy_dir_into_copies_directory():
+    """
+    Copy directory into another directory. Source remains, copy created in directory.
+    
+    Structure before:
+    test_dir/
+    ├── source_dir/
+    │   └── file.txt
+    └── dest_dir/
+    
+    Structure after:
+    test_dir/
+    ├── source_dir/
+    │   └── file.txt
+    └── dest_dir/
+        └── source_dir/
+            └── file.txt
+    """
+    os.makedirs(FILE_SYSTEM_TEST_DIR, exist_ok=True)
+    source_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "source_dir")
+    dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest_dir")
+    os.makedirs(source_dir)
+    os.makedirs(dest_dir)
+    
+    source_file = os.path.join(source_dir, "file.txt")
+    with open(source_file, "w") as f:
+        f.write("test content")
+    
+    result = copy_into(source_paths=source_dir, destination_dir=dest_dir)
+    
+    assert result["success"] is True
+    single_result = result["results"][source_dir]
+    assert single_result["error"] is None
+    assert path_exists(source_dir)  # Source should still exist
+    assert path_exists(os.path.join(dest_dir, "source_dir"))  # Copy should exist
+    
+    # Verify directories are identical
+    compare_result = compare_dirs(
+        dir_path_1=source_dir,
+        dir_path_2=os.path.join(dest_dir, "source_dir")
+    )
+    assert compare_result["success"] is True
+    assert compare_result["are_equal"] is True
+    
+    # Clean up
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
+
+
+def test_copy_dir_into_destination_exists_fails():
+    """
+    Copying to directory where subdirectory already exists should fail.
+    """
+    os.makedirs(FILE_SYSTEM_TEST_DIR, exist_ok=True)
+    source_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "source_dir")
+    dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest_dir")
+    existing_subdir = os.path.join(dest_dir, "source_dir")
+    os.makedirs(source_dir)
+    os.makedirs(existing_subdir)
+    
+    result = copy_into(source_paths=source_dir, destination_dir=dest_dir)
+    
+    assert result["success"] is False
+    single_result = result["results"][source_dir]
+    assert single_result["success"] is False
+    assert "Overwrite is not allowed" in single_result["error"]
+    assert path_exists(source_dir)  # Source should still exist
+    
+    # Clean up
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
+
+
+def test_copy_dir_into_source_not_exists():
+    """
+    Copying non-existent directory should fail.
+    """
+    os.makedirs(FILE_SYSTEM_TEST_DIR, exist_ok=True)
+    source_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "nonexistent")
+    dest_dir = os.path.join(FILE_SYSTEM_TEST_DIR, "dest_dir")
+    os.makedirs(dest_dir, exist_ok=True)
+    
+    result = copy_into(source_paths=source_dir, destination_dir=dest_dir)
+    
+    assert result["success"] is False
+    single_result = result["results"][source_dir]
+    assert "does not exist" in single_result["error"]
+    
+    # Clean up
+    empty_dir(path=FILE_SYSTEM_TEST_DIR)
+

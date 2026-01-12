@@ -330,7 +330,7 @@ AI agents communicate through JSON (or similar structured formats). When an LLM 
 The agent can only provide:
 - ✅ Primitives: strings, numbers, booleans, null
 - ✅ Collections: lists and dictionaries of primitives
-- ✅ References: `[sys:self]`, `[obj:saved_object]` (our special syntax)
+- ✅ References: `<sys:self]`, `<obj:saved_object]` (our special syntax)
 - ❌ Complex objects: API clients, database connections, file handles, etc.
 
 ### Why `@bind` is Essential
